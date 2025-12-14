@@ -1,0 +1,12 @@
+monitor_targets:
+  - token_name: Fourmem
+    token_address: "0xTokenAddr"
+    # ... 其他字段
+smart_wallets:
+  enabled: true
+  wallets:
+    - wallet_address: "0xSmart1"
+      # ...
+creators:
+  enabled: false  # 关闭creator监听
+  creators: []    # 空列表，不监听
