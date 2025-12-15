@@ -31,10 +31,12 @@ var DefaultMonitorTargets = []*config.MonitorTarget{
 			"0x3d0ce9bfc3ed7d6862dbb28b2dea94561fe714a1b4d019aa8af39730d1ad7c3d", // SafeReceived (BNB)
 		},
 
-		MethodIDsToMonitor: []string{
-			"0xe63aaf36", // 示例 Fourmeme 方法
-			"0x38ed1739", // swapExactTokensForTokens (Pancake)
-		},
+		//MethodIDsToMonitor: []string{
+		//	"0xe63aaf36", // 示例 Fourmeme 方法
+		//	"0x38ed1739", // swapExactTokensForTokens (Pancake)
+		//	"0x5b9e9006", //swapV2ExactIn https://bscscan.com/tx/0x2d204e1e896127af4938a9f85604dd96ac75298ac1e22f80ade8b293db4a03b2
+		//	"0xb80c2f09", //smartSwapByOrderId https://bscscan.com/tx/0x3eb37dc9ff17cafcb3ad7c065697dc12d4e1d4e9174d55a6657cd3e4b0b1c5c3
+		//},
 
 		// 默认交易策略
 		BuyOnLiquidityAdd:       true,

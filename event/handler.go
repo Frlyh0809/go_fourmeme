@@ -17,13 +17,6 @@ import (
 	"github.com/ethereum/go-ethereum/core/types"
 )
 
-var (
-	transferTopic       = "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef"
-	pairCreatedTopic    = "0xe1fffcc4923d04b559f4d29a8bfc6cda04eb5b0d3c460751c2402c5c5cc9109c"
-	mintTopic           = "0x0d3648bd0f6ba80134a33ba9275ac585d9d315f0ad8355cddefde31afa28d0e9"
-	depositConfirmTopic = "0x0a5575b3648bae2210cee56bf33254cc1ddfbc7bf637c0af2ac18b14fb1bae19"
-)
-
 // HandleEvent 核心事件处理器
 func HandleEvent(vLog types.Log, target *configentity.MonitorTarget) {
 	if len(vLog.Topics) == 0 {
@@ -40,13 +33,13 @@ func HandleEvent(vLog types.Log, target *configentity.MonitorTarget) {
 	topic0 := vLog.Topics[0].Hex()
 
 	switch topic0 {
-	case transferTopic:
+	case config.TransferTopic:
 		handleTransfer(vLog, record, target)
-	case pairCreatedTopic:
+	case config.PairCreatedTopic:
 		handlePairCreated(vLog, record, target)
-	case mintTopic:
+	case config.MintTopic:
 		handleLiquidityAdd(vLog, record, target)
-	case depositConfirmTopic:
+	case config.DepositConfirmTopic:
 		handleDepositConfirm(vLog, record, target)
 	default:
 		// 其他 Fourmeme 或 Pancake 事件可扩展
