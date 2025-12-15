@@ -3,35 +3,44 @@ package database
 
 import (
 	"go_fourmeme/config"
-	"go_fourmeme/entity/po"
+	"go_fourmeme/entity/po" // 数据库实体
 	"go_fourmeme/log"
-	"gorm.io/driver/sqlite" // 或其他驱动，如 postgres
+
+	"gorm.io/driver/sqlite" // 可替换为 postgres/mysql
 	"gorm.io/gorm"
 )
 
 var DB *gorm.DB
 
 // InitDB 初始化数据库连接并迁移表
-func InitDB(cfg *config.ChainConfig) {
-	dsn := cfg.DBDSN
+func InitDB() {
+	dsn := config.BSCChain.DBDSN
 	if dsn == "" {
-		dsn = "transactions.db" // 默认 SQLite 文件
+		dsn = "fourmeme_transactions.db" // 默认本地 SQLite
 		log.LogInfo("使用默认 SQLite 数据库: %s", dsn)
 	}
 
 	var err error
 	DB, err = gorm.Open(sqlite.Open(dsn), &gorm.Config{
-		Logger: nil, // 可自定义日志
+		DisableForeignKeyConstraintWhenMigrating: true,
 	})
 	if err != nil {
 		log.LogFatal("数据库连接失败: %v", err)
 	}
 
-	// 自动迁移所有表（从 entity/po 导入）
+	// 自动迁移实体表
 	err = DB.AutoMigrate(&po.TransactionRecord{})
 	if err != nil {
-		log.LogFatal("表迁移失败: %v", err)
+		log.LogFatal("数据库表迁移失败: %v", err)
 	}
 
-	log.LogInfo("数据库初始化成功（DSN: %s）", dsn)
+	log.LogInfo("数据库初始化成功 (DSN: %s)", dsn)
+}
+
+// CloseDB 优雅关闭（main defer 调用，可选）
+func CloseDB() {
+	if DB != nil {
+		sqlDB, _ := DB.DB()
+		sqlDB.Close()
+	}
 }

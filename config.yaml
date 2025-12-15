@@ -1,12 +1,20 @@
 monitor_targets:
-  - token_name: Fourmem
-    token_address: "0xTokenAddr"
-    # ... 其他字段
+  - token_name: "FourmemeMain"
+    fourmeme_managers:
+      - "0x5c952063c7fc8610FFDB798152D69F0B9550762b"
+      - "0xF251F83e40a78868FcfA3FA4599Dad6494E46034"
+    buy_amount_bnb: 0.1
+    slippage_tolerance: 0.12
+    take_profit_multiple: 4.0
+    stop_loss_multiple: 0.5
+    trigger_on_smart_wallet_buy: true
+    buy_on_liquidity_add: true
+
 smart_wallets:
   enabled: true
   wallets:
-    - wallet_address: "0xSmart1"
-      # ...
+    - wallet_address: "0xSmartWalletExample1"
+      on_buy_action: "buy"
+
 creators:
-  enabled: false  # 关闭creator监听
-  creators: []    # 空列表，不监听
+  enabled: false

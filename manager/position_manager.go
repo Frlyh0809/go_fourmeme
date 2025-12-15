@@ -2,9 +2,8 @@
 package manager
 
 import (
-	//"math/big"
+	"strings"
 	"sync"
-	//"time"
 
 	"go_fourmeme/entity"
 	"go_fourmeme/log"
@@ -12,7 +11,7 @@ import (
 
 var (
 	positionMu sync.RWMutex
-	positions  = make(map[string]*entity.Position) // key: tokenAddr (lowercase)
+	positions  = make(map[string]*entity.Position) // key: tokenAddr (小写标准化)
 )
 
 // AddPosition 添加或更新持仓（线程安全）
@@ -21,34 +20,33 @@ func AddPosition(pos *entity.Position) {
 		return
 	}
 
-	tokenAddr := normalizeAddr(pos.TokenAddr)
+	tokenKey := normalizeKey(pos.TokenAddr)
 
 	positionMu.Lock()
 	defer positionMu.Unlock()
 
-	existing, exists := positions[tokenAddr]
-	if exists {
-		log.LogWarn("持仓已存在，更新记录: %s (原Tx: %s -> 新Tx: %s)", tokenAddr[:10], existing.BuyTxHash[:10], pos.BuyTxHash[:10])
-		// 可选择合并持仓（加权平均价格），这里简单覆盖（适合单次买入策略）
+	if existing, ok := positions[tokenKey]; ok {
+		log.LogWarn("持仓已存在，更新: %s (旧Tx: %s → 新Tx: %s)",
+			tokenKey[:10], existing.BuyTxHash[:10], pos.BuyTxHash[:10])
+		// 可扩展为加权平均，这里简单覆盖（适合单次大额买入）
 	}
 
-	positions[tokenAddr] = pos
+	positions[tokenKey] = pos
 
-	log.LogInfo("新增/更新持仓成功: %s | 投入 %.4f BNB | 获取 %s token | 止盈 %.1fx | 止损 %.1fx",
-		tokenAddr[:10],
+	log.LogInfo("新增/更新持仓: %s | 投入 %.6f BNB | 获取 %s token | 止盈 %.1fx | 止损 %.1fx",
+		tokenKey[:10],
 		pos.BuyAmountBNB.Text('f', 6),
 		pos.BuyTokenAmount.String(),
 		pos.TargetProfitMult,
-		pos.TargetLossMult,
-	)
+		pos.TargetLossMult)
 }
 
-// GetPosition 获取持仓（只读）
+// GetPosition 获取单个持仓
 func GetPosition(tokenAddr string) (*entity.Position, bool) {
 	positionMu.RLock()
 	defer positionMu.RUnlock()
 
-	pos, ok := positions[normalizeAddr(tokenAddr)]
+	pos, ok := positions[normalizeKey(tokenAddr)]
 	return pos, ok
 }
 
@@ -64,21 +62,29 @@ func GetAllPositions() map[string]*entity.Position {
 	return copyMap
 }
 
-// MarkAsSold 标记已卖出（盈亏监控调用）
+// MarkAsSold 标记持仓已卖出
 func MarkAsSold(tokenAddr string) {
 	positionMu.Lock()
 	defer positionMu.Unlock()
 
-	if pos, ok := positions[normalizeAddr(tokenAddr)]; ok {
+	key := normalizeKey(tokenAddr)
+	if pos, ok := positions[key]; ok {
 		pos.Sold = true
-		log.LogInfo("持仓标记为已卖出: %s", tokenAddr[:10])
+		log.LogInfo("持仓已标记为卖出: %s", key[:10])
 	}
 }
 
-// normalizeAddr 统一地址格式（小写）
-func normalizeAddr(addr string) string {
-	if len(addr) > 2 && addr[:2] == "0x" {
-		return addr
-	}
-	return addr
+// DeletePosition 删除持仓（可选，清理用）
+func DeletePosition(tokenAddr string) {
+	positionMu.Lock()
+	defer positionMu.Unlock()
+
+	key := normalizeKey(tokenAddr)
+	delete(positions, key)
+	log.LogInfo("持仓已删除: %s", key[:10])
+}
+
+// normalizeKey 标准化地址 key（小写 + 去0x）
+func normalizeKey(addr string) string {
+	return strings.ToLower(strings.TrimPrefix(addr, "0x"))
 }

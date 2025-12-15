@@ -4,21 +4,23 @@ package client_test
 import (
 	"context"
 	"encoding/json"
+	"fmt"
+	"go_fourmeme/config"
+
 	//"fmt"
 	"math/big"
 	"testing"
 	"time"
 
+	"go_fourmeme/client" // 替换为你的实际包路径
+
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/common"
+
 	//"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
-	"go_fourmeme/client" // 替换为你的实际包路径
 	//"go_fourmeme/log"    // 如果没有自定义 log，可直接用 fmt.Printf
 )
-
-// 测试网公共节点（稳定、免费）
-const testnetRPCURL = "https://data-seed-prebsc-1-s1.binance.org:8545"
 
 // 一些常用测试地址
 var (
@@ -41,7 +43,7 @@ func printJSON(t *testing.T, name string, result interface{}, err error) {
 
 // 创建客户端的公共函数（每个测试独立创建，避免状态污染）
 func newTestClient(t *testing.T) *ethclient.Client {
-	cli, err := client.NewClient(testnetRPCURL)
+	cli, err := client.NewClient()
 	if err != nil {
 		t.Fatalf("创建 ethclient 失败: %v", err)
 	}
@@ -207,6 +209,76 @@ func TestHeaderByNumber(t *testing.T) {
 		"GasLimit": header.GasLimit,
 	}
 	printJSON(t, "HeaderByNumber (最新)", result, nil)
+}
+
+func TestFilterLogs(t *testing.T) {
+	cli := newTestClient(t)
+	defer cli.Close()
+
+	var addresses []common.Address
+	fourmemeManagers := []string{config.DefaultFourmemeManager, "0x7d6c5429A39B8414609e8D257BEDA23525884444"}
+	// Fourmeme Manager 地址
+	for _, mgr := range fourmemeManagers {
+		addresses = append(addresses, common.HexToAddress(mgr))
+	}
+
+	topicsArr := []string{
+		//TODO 多topic时 FilterLogs失效
+		//"0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef",
+		"0x8c5be1e5ebec7d5bd14f71427d1e84f3dd0314c0f7b2291e5b200ac8c7c3b925"}
+
+	var topics [][]common.Hash
+	for _, t := range topicsArr {
+		topics = append(topics, []common.Hash{common.HexToHash(t)})
+	}
+
+	fromBlock := big.NewInt(71710960)
+	toBlock := big.NewInt(71710970)
+
+	t.Logf("查询区块范围: %d ~ %d", fromBlock.Uint64(), toBlock.Uint64())
+
+	query := ethereum.FilterQuery{
+		FromBlock: fromBlock,
+		ToBlock:   toBlock,
+		Addresses: addresses,
+		Topics:    topics,
+	}
+
+	logs, err := cli.FilterLogs(context.Background(), query) // 最新
+	if err != nil {
+		printJSON(t, "HeaderByNumber", nil, err)
+		return
+	}
+
+	result := map[string]interface{}{
+		"BlockRange": fmt.Sprintf("%d ~ %d", fromBlock.Uint64(), toBlock.Uint64()),
+		"Addresses":  len(addresses),
+		"Topics":     len(topics),
+		"LogsFound":  len(logs),
+	}
+
+	if len(logs) > 0 {
+		var previewList []map[string]string
+		for i, l := range logs {
+			if i >= 10 {
+				break
+			}
+			previewList = append(previewList, map[string]string{
+				"TxHash":   l.TxHash.Hex(),
+				"Address":  l.Address.Hex(),
+				"Topic0":   l.Topics[0].Hex(),
+				"BlockNum": fmt.Sprintf("%d", l.BlockNumber),
+				"LogIndex": fmt.Sprintf("%d", l.Index),
+			})
+		}
+		result["PreviewLogs"] = previewList
+	}
+
+	printJSON(t, "FilterLogs", result, nil)
+
+	if len(logs) == 0 {
+		t.Log("未找到日志，建议检查：1. 区块范围是否包含事件 2. 节点是否同步 3. Addresses/Topics 是否正确")
+	}
 }
 
 // 辅助函数

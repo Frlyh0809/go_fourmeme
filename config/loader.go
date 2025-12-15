@@ -1,46 +1,57 @@
+// config/loader.go
 package config
 
 import (
-	"crypto/ecdsa"
 	"encoding/json"
-	"fmt"
+	"go_fourmeme/entity/config"
 	"io/ioutil"
 	"os"
-	"strings"
 
-	"github.com/ethereum/go-ethereum/common/hexutil"
-	"github.com/ethereum/go-ethereum/crypto"
+	"go_fourmeme/log"
+
 	"github.com/joho/godotenv"
-	"gopkg.in/yaml.v3"
+	"gopkg.in/yaml.v2"
 )
 
-// /从配置文件中加载数据库相关的配置
+// LoadFromEnvAndFile 加载配置
+// 优先级：env > .env > yaml/json 文件 > 默认值
 func LoadFromEnvAndFile(configFile string) {
-	godotenv.Load() // 加载.env
+	// 加载 .env 文件
+	_ = godotenv.Load()
 
-	// 加载链配置（从env覆盖默认）
-	BSCChain.PrivateKey = os.Getenv("PRIVATE_KEY")
-	// ... 其他覆盖
+	// 链配置从 env 覆盖
+	if pk := os.Getenv("PRIVATE_KEY"); pk != "" {
+		BSCChain.PrivateKey = pk
+	}
+	if url := os.Getenv("BSC_WS_URL"); url != "" {
+		BSCChain.WSURL = url
+	}
+	if dsn := os.Getenv("DB_DSN"); dsn != "" {
+		BSCChain.DBDSN = dsn
+	}
 
-	// 动态加载监听配置（支持JSON或YAML）
+	// 加载监听配置（yaml 或 json）
+	if configFile == "" {
+		log.LogInfo("无配置文件，使用默认配置")
+		return
+	}
+
 	data, err := ioutil.ReadFile(configFile)
 	if err != nil {
-		// 使用默认配置
+		log.LogWarn("读取配置文件失败，使用默认: %v", err)
 		return
 	}
 
 	var cfg struct {
-		MonitorTargets []*MonitorTarget    `json:"monitor_targets" yaml:"monitor_targets"`
-		SmartWallets   *SmartWalletsConfig `json:"smart_wallets" yaml:"smart_wallets"`
-		Creators       *CreatorsConfig     `json:"creators" yaml:"creators"`
+		MonitorTargets []*config.MonitorTarget    `json:"monitor_targets" yaml:"monitor_targets"`
+		SmartWallets   *config.SmartWalletsConfig `json:"smart_wallets" yaml:"smart_wallets"`
+		Creators       *config.CreatorsConfig     `json:"creators" yaml:"creators"`
 	}
 
-	if err := json.Unmarshal(data, &cfg); err == nil {
-		// JSON加载成功
-	} else if err := yaml.Unmarshal(data, &cfg); err == nil {
-		// YAML加载成功
-	} else {
-		panic("配置文件格式错误")
+	if err := yaml.Unmarshal(data, &cfg); err != nil {
+		if jsonErr := json.Unmarshal(data, &cfg); jsonErr != nil {
+			log.LogFatal("配置文件解析失败 (支持 yaml/json): yaml err: %v, json err: %v", err, jsonErr)
+		}
 	}
 
 	// 覆盖默认
@@ -53,30 +64,6 @@ func LoadFromEnvAndFile(configFile string) {
 	if cfg.Creators != nil {
 		DefaultCreators = cfg.Creators
 	}
-	// 覆盖DBDSN
-	if dsn := os.Getenv("DB_DSN"); dsn != "" {
-		//BSCChain.DBDSN = dsn
-	}
-}
 
-// 获取私钥对象（推荐封装成局部函数，避免重复代码）
-func GetPrivateKey() (*ecdsa.PrivateKey, error) {
-	if BSCChain.PrivateKey == "" {
-		return nil, fmt.Errorf("私钥未配置：PRIVATE_KEY 环境变量为空")
-	}
-
-	// 去除可能的 0x 前缀
-	pkHex := strings.TrimPrefix(BSCChain.PrivateKey, "0x")
-
-	pkBytes, err := hexutil.Decode("0x" + pkHex)
-	if err != nil {
-		return nil, fmt.Errorf("私钥解码失败: %v", err)
-	}
-
-	privateKey, err := crypto.ToECDSA(pkBytes)
-	if err != nil {
-		return nil, fmt.Errorf("私钥转换为 ECDSA 失败: %v", err)
-	}
-
-	return privateKey, nil
+	log.LogInfo("配置文件加载成功: %s", configFile)
 }
