@@ -43,6 +43,7 @@ func InitLogger() {
 		Logger.SetLevel(logrus.InfoLevel)
 	}
 
+	Logger.Infof("日志系统初始化完成 [Level: %s]", level)
 	// 可选：输出到文件
 	if logFile := os.Getenv("LOG_FILE"); logFile != "" {
 		file, err := os.OpenFile(logFile, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
@@ -53,7 +54,7 @@ func InitLogger() {
 		}
 	}
 
-	Logger.Info("日志系统初始化完成 [Level: %s]", Logger.Level.String())
+	Logger.Infof("日志系统初始化完成 [Level: %s]", Logger.Level.String())
 }
 
 // 便捷函数

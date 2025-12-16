@@ -18,41 +18,60 @@ import (
 )
 
 // HandleEventV2 完整买卖解析（结合自定义事件 + Transfer）
-func HandleEventV2(allLogs []types.Log, target *configentity.MonitorTarget) {
+func HandleEventV2(allLogs []types.Log, receipt *types.Receipt, target *configentity.MonitorTarget) {
 	if len(allLogs) == 0 {
 		return
 	}
+	blockNum := receipt.BlockNumber
+	txHash := receipt.TxHash.Hex()
 
 	// 1. Token 创建识别 (OwnershipTransferred + previousOwner == zero)
 	for _, vLog := range allLogs {
+		if len(vLog.Topics) == 0 {
+			continue
+		}
 		if vLog.Topics[0] == config.HashOwnershipTransferred && len(vLog.Topics) >= 3 {
 			previousOwner := common.BytesToAddress(vLog.Topics[1].Bytes())
 			if previousOwner == config.AddrZero {
+
 				newOwner := common.BytesToAddress(vLog.Topics[2].Bytes())
-				log.LogInfo("【新 Token 创建】Token: %s | Creator: %s", vLog.Address.Hex(), newOwner.Hex())
+				//解析真实的creator
+				isCreator, creator := parseCreator(allLogs, vLog.Address)
+
+				var realCreator common.Address
+				if isCreator {
+					realCreator = common.HexToAddress(creator)
+				} else {
+					realCreator = newOwner
+					//不是真实的fourmeme 创建
+					//continue
+				}
+
+				log.LogInfo("【新 Token 创建】Token: %s | Creator: %s | blockNum:%d | hash:%s ", vLog.Address.Hex(), realCreator, blockNum, txHash)
 				// 可动态添加监听
-				return
+				break
 			}
 			newOwner := common.BytesToAddress(vLog.Topics[2].Bytes())
 			if newOwner == config.AddrZero {
-				log.LogInfo("【Token 销毁】Token: %s | Creator: %s", vLog.Address.Hex(), previousOwner.Hex())
-				return
+				log.LogInfo("【Token 销毁】Token: %s | Creator: %s | blockNum:%d | hash:%s ", vLog.Address.Hex(), previousOwner.Hex(), blockNum, txHash)
+				break
 			}
 			if isFourmemeManager(newOwner) {
-				log.LogInfo("【Token 移交fourMeme】Token: %s | Creator: %s", vLog.Address.Hex(), previousOwner.Hex())
-				return
+				log.LogInfo("【Token 移交fourMeme】Token: %s | Creator: %s | blockNum:%d | hash:%s ", vLog.Address.Hex(), previousOwner.Hex(), blockNum, txHash)
+				break
 			}
 		}
 	}
 
 	// 2. 买卖识别：匹配自定义事件
 	var tradeInfo struct {
-		TokenAddr   common.Address
-		Buyer       common.Address
-		TokenAmount *big.Int
-		BNBAmount   *big.Int
-		IsUSD1      bool
-		TxHash      common.Hash
+		TokenAddr    common.Address
+		Buyer        common.Address
+		TokenAmount  *big.Int
+		BNBAmount    *big.Int
+		BNBFeeAmount *big.Int
+		IsUSD1       bool
+		TxHash       common.Hash
 	}
 
 	foundCustom := false
@@ -73,15 +92,33 @@ func HandleEventV2(allLogs []types.Log, target *configentity.MonitorTarget) {
 			// 索引含义（根据你的解析文档调整）
 			tradeInfo.TokenAddr = common.BytesToAddress(words[0].Bytes()) // 第1个 word (padded address)
 			tradeInfo.Buyer = common.BytesToAddress(words[1].Bytes())     // 第2个
-			tradeInfo.TokenAmount = words[2]
-			tradeInfo.BNBAmount = words[3]
+			if t0 == config.HashManager1Event1 || t0 == config.HashManager1Event2 {
+				tradeInfo.TokenAmount = words[2]
+				tradeInfo.BNBAmount = words[3]
+				tradeInfo.BNBFeeAmount = words[4]
+			}
+			if t0 == config.HashManager2Event1 || t0 == config.HashManager2Event2 {
+				tradeInfo.TokenAmount = words[3]
+				tradeInfo.BNBAmount = words[4]
+				tradeInfo.BNBFeeAmount = words[5]
+
+			}
+
 			tradeInfo.TxHash = logData.TxHash
 
 			// 检测 USD1 支付
 			for _, l := range allLogs {
+				if len(l.Topics) == 0 {
+					continue
+				}
 				if l.Address == config.AddrUSD1 && l.Topics[0] == config.HashTransfer {
-					tradeInfo.IsUSD1 = true
-					break
+					if len(l.Topics) == 3 {
+						if common.BytesToAddress(words[1].Bytes()) == config.AddrTokenManagerHelper3 || common.BytesToAddress(words[2].Bytes()) == config.AddrTokenManagerHelper3 {
+							tradeInfo.IsUSD1 = true
+							break
+						}
+					}
+
 				}
 			}
 
@@ -96,10 +133,16 @@ func HandleEventV2(allLogs []types.Log, target *configentity.MonitorTarget) {
 
 	// 3. 用 Transfer 事件确认方向
 	for _, logData := range allLogs {
+		if len(logData.Topics) == 0 {
+			continue
+		}
 		if logData.Topics[0] == config.HashTransfer && logData.Address == tradeInfo.TokenAddr {
 			from := common.BytesToAddress(logData.Topics[1].Bytes())
 			to := common.BytesToAddress(logData.Topics[2].Bytes())
 			value := new(big.Int).SetBytes(logData.Data)
+
+			//log.LogInfo("【Token 交易】Token: %s | trader: %s | TokenAmount:%d  | BNBAmount:%d | value:%d | hash:%s ",
+			//	tradeInfo.TokenAddr.Hex(), tradeInfo.Buyer.Hex(), tradeInfo.TokenAmount, tradeInfo.BNBAmount, value, txHash)
 
 			if value.Cmp(tradeInfo.TokenAmount) != 0 {
 				continue
@@ -113,13 +156,13 @@ func HandleEventV2(allLogs []types.Log, target *configentity.MonitorTarget) {
 			if isFourmemeManager(to) {
 				// Token → Manager = 卖出
 				log.LogInfo("【卖出】Token: %s | Seller: %s | Token: %s | Pay: %s %s | Tx: %s",
-					tradeInfo.TokenAddr.Hex()[:10], from.Hex()[:10], tradeInfo.TokenAmount.String(),
+					tradeInfo.TokenAddr.Hex(), tradeInfo.Buyer.Hex(), tradeInfo.TokenAmount.String(),
 					payment, tradeInfo.BNBAmount.String(), tradeInfo.TxHash.Hex())
 				// 可触发卖出逻辑
 			} else if isFourmemeManager(from) {
 				// Manager → User = 买入
 				log.LogInfo("【买入】Token: %s | Buyer: %s | Token: %s | Pay: %s %s | Tx: %s",
-					tradeInfo.TokenAddr.Hex()[:10], to.Hex()[:10], tradeInfo.TokenAmount.String(),
+					tradeInfo.TokenAddr.Hex(), tradeInfo.Buyer.Hex(), tradeInfo.TokenAmount.String(),
 					payment, tradeInfo.BNBAmount.String(), tradeInfo.TxHash.Hex())
 
 				if target != nil {
@@ -243,4 +286,29 @@ func isFourmemeManager(addr common.Address) bool {
 func isSmartWallet(addr common.Address) bool {
 	// 从 config.DefaultSmartWallets 实现
 	return false // 占位
+}
+
+func parseCreator(allLogs []types.Log, addToken common.Address) (bool, string) {
+	if len(allLogs) == 0 {
+		return false, ""
+	}
+	for _, vLog := range allLogs {
+
+		if len(vLog.Topics) == 0 {
+			continue
+
+		}
+		if vLog.Topics[0] == config.HashTopicManager2CreateEvent1 {
+			words := utils.SplitDataToWords(vLog.Data)
+			if len(words) < 2 {
+				continue
+			}
+			if addToken == common.BytesToAddress(words[1].Bytes()) {
+				creator := common.BytesToAddress(words[0].Bytes())
+				return true, creator.Hex()
+			}
+
+		}
+	}
+	return false, "" // 占位
 }

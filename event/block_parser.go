@@ -94,23 +94,23 @@ func processBlockReceipts(blockNum *big.Int) {
 		log.LogError("eth_getBlockReceipts 失败 (区块 %d): %v", blockNum, err)
 		return
 	}
-
+	log.LogInfo("区块 %d | hash size: %d ", blockNum, len(receipts))
 	// 收集所有日志
-	var allLogs []types.Log
 	for _, receipt := range receipts {
 		if receipt != nil {
+			target := config.DefaultMonitorTargets[0]
+			var hashLogs []types.Log
 			for _, logPtr := range receipt.Logs {
 				if logPtr != nil {
-					allLogs = append(allLogs, *logPtr) // 解引用指针
+					hashLogs = append(hashLogs, *logPtr) // 解引用指针
 				}
+			}
+			if len(hashLogs) > 0 {
+				//log.LogInfo("区块 %d | hash: %s | logs size: %v", blockNum, receipt.TxHash.Hex(), len(hashLogs))
+				HandleEventV2(hashLogs, receipt, target)
 			}
 		}
 	}
-	log.LogInfo("区块 %d | 总日志: %d ", blockNum, len(allLogs))
-
-	//常规过滤meme
-	target := config.DefaultMonitorTargets[0]
-	HandleEventV2(allLogs, target)
 
 	//for _, vLog := range allLogs {
 	//	target := findTargetByAddress(vLog.Address.Hex())

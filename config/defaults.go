@@ -32,7 +32,7 @@ var DefaultMonitorTargets = []*config.MonitorTarget{
 			TopicManager2Event1, // TokenManager2 Deposit/Confirm (常见)
 			TopicManager2Event2, // TokenManager2 Deposit/Confirm (常见)
 
-			//TopicManager2CreateEvent1, //TokenManager2 createToken
+			TopicManager2CreateEvent1,         //TokenManager2 createToken
 			TopicManager2OwnershipTransferred, //TokenManager2 OwnershipTransferred [previousOwner=零地址：createToken]
 
 			//"0x741ffc4605df23259462547defeab4f6e755bdc5fbb6d0820727d6d3400c7e0d", // Signature/Relay Confirm

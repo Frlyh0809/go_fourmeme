@@ -18,7 +18,8 @@ const (
 	PancakeFactoryAddr = "0xcA143Ce32Fe78f1f7019d7d551a6402fC5350c73"
 	PancakeRouterAddr  = "0x10ED43C718714eb63d5aA57df234750"
 	WBNBAddr           = "0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c"
-	USD1Address        = "0x55d398326f99059fF775485246999027B3197955"
+	USDTAddress        = "0x55d398326f99059fF775485246999027B3197955" //BUSDT
+	USD1Address        = "0x8d0d000ee44948fc98c9b98a4fa4921476f08b0d" //WLFI: USD1
 	ZeroAddress        = "0x0000000000000000000000000000000000000000"
 )
 
@@ -45,17 +46,20 @@ const (
 // 方便使用的 Address 变量
 var (
 	DefaultFourmemeManagerAddr = common.HexToAddress(DefaultFourmemeManager)
+	AddrTokenManagerHelper3    = common.HexToAddress(TokenManagerHelper3)
 	PancakeFactory             = common.HexToAddress(PancakeFactoryAddr)
 	PancakeRouter              = common.HexToAddress(PancakeRouterAddr)
 	WBNB                       = common.HexToAddress(WBNBAddr)
 
-	HashTransfer             = common.HexToHash(TopicTransfer)
-	HashOwnershipTransferred = common.HexToHash(TopicManager2OwnershipTransferred)
-	HashManager1Event1       = common.HexToHash(TopicManager1Event1)
-	HashManager1Event2       = common.HexToHash(TopicManager1Event2)
-	HashManager2Event1       = common.HexToHash(TopicManager2Event1)
-	HashManager2Event2       = common.HexToHash(TopicManager2Event2)
+	HashTransfer                  = common.HexToHash(TopicTransfer)
+	HashOwnershipTransferred      = common.HexToHash(TopicManager2OwnershipTransferred)
+	HashTopicManager2CreateEvent1 = common.HexToHash(TopicManager2CreateEvent1)
+	HashManager1Event1            = common.HexToHash(TopicManager1Event1)
+	HashManager1Event2            = common.HexToHash(TopicManager1Event2)
+	HashManager2Event1            = common.HexToHash(TopicManager2Event1)
+	HashManager2Event2            = common.HexToHash(TopicManager2Event2)
 
+	AddrUSDT = common.HexToAddress(USDTAddress)
 	AddrUSD1 = common.HexToAddress(USD1Address)
 	AddrZero = common.HexToAddress(ZeroAddress)
 )
