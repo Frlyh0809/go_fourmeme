@@ -106,16 +106,26 @@ func processBlockReceipts(blockNum *big.Int) {
 			}
 		}
 	}
+	log.LogInfo("区块 %d | 总日志: %d ", blockNum, len(allLogs))
 
+	//常规过滤meme
+	vLog := filterMemeTransferLogs(allLogs)
+	target := config.DefaultMonitorTargets[0]
+	HandleEventV2(vLog, allLogs, target)
+
+	//for _, vLog := range allLogs {
+	//	target := findTargetByAddress(vLog.Address.Hex())
+	//	HandleEventV2(vLog, allLogs, target)
+	//}
 	// 手动过滤
-	filteredLogs := filterLogs(allLogs)
+	//filteredLogs := filterLogs(allLogs)
 
-	log.LogInfo("区块 %d | 总日志: %d | 匹配日志: %d", blockNum, len(allLogs), len(filteredLogs))
+	//log.LogInfo("区块 %d | 总日志: %d | 匹配日志: %d", blockNum, len(allLogs), len(filteredLogs))
 
-	for _, vLog := range filteredLogs {
-		target := findTargetByAddress(vLog.Address.Hex())
-		HandleEvent(vLog, target)
-	}
+	//for _, vLog := range filteredLogs {
+	//	target := findTargetByAddress(vLog.Address.Hex())
+	//	HandleEvent(vLog, target)
+	//}
 }
 
 // filterLogs 手动过滤日志（Addresses + Topic0）

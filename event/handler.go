@@ -17,6 +17,41 @@ import (
 	"github.com/ethereum/go-ethereum/core/types"
 )
 
+// HandleEvent 核心事件处理器 解析所有log
+func HandleEventV2(vLog types.Log, allLogs []types.Log, target *configentity.MonitorTarget) {
+	if len(vLog.Topics) == 0 {
+		return
+	}
+
+	record := &po.TransactionRecord{
+		TxHash:    vLog.TxHash.Hex(),
+		TokenAddr: vLog.Address.Hex(),
+		Timestamp: time.Now(),
+		Status:    "info",
+	}
+
+	topic0 := vLog.Topics[0].Hex()
+
+	switch topic0 {
+	case config.TransferTopic:
+		handleTransfer(vLog, record, target)
+	case config.PairCreatedTopic:
+		handlePairCreated(vLog, record, target)
+	case config.MintTopic:
+		handleLiquidityAdd(vLog, record, target)
+	case config.DepositConfirmTopic:
+		handleDepositConfirm(vLog, record, target)
+	default:
+		// 其他 Fourmeme 或 Pancake 事件可扩展
+		return
+	}
+
+	err := database.SaveTxRecord(record)
+	if err != nil {
+		return
+	}
+}
+
 // HandleEvent 核心事件处理器
 func HandleEvent(vLog types.Log, target *configentity.MonitorTarget) {
 	if len(vLog.Topics) == 0 {
