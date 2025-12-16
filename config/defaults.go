@@ -16,7 +16,7 @@ var DefaultMonitorTargets = []*config.MonitorTarget{
 
 		// === 事件 Topic 完全隔离 ===
 		ERC20Topics: []string{
-			"0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef", // Transfer
+			TopicTransfer, // Transfer
 			//"0x8c5be1e5ebec7d5bd14f71427d1e84f3dd0314c0f7b2291e5b200ac8c7c3b925", // Approval
 		},
 		//PancakeTopics: []string{
@@ -26,14 +26,14 @@ var DefaultMonitorTargets = []*config.MonitorTarget{
 		//	"0xd78ad95fa46c994b6551d0da85fc275fe613ce37657fb8d5e3d130840159d822", // Swap
 		//},
 		FourmemeTopics: []string{
-			"0x80d4e495cda89b31af98c8e977ff11f417bafcee26902a17a15be51830c47533", // TokenManager1
-			"0x00fe0e12b43090c1fc19a34aefa5cc138a4eeafc60ab800f855c730b3fb9480e", // TokenManager1
+			TopicManager1Event1, // TokenManager1
+			TopicManager1Event2, // TokenManager1
 
-			"0x0a5575b3648bae2210cee56bf33254cc1ddfbc7bf637c0af2ac18b14fb1bae19", // TokenManager2 Deposit/Confirm (常见)
-			"0x7db52723a3b2cdd6164364b3b766e65e540d7be48ffa89582956d8eaebe62942", // TokenManager2 Deposit/Confirm (常见)
+			TopicManager2Event1, // TokenManager2 Deposit/Confirm (常见)
+			TopicManager2Event2, // TokenManager2 Deposit/Confirm (常见)
 
-			//"0x396d5e902b675b032348d3d2e9517ee8f0c4a926603fbc075d3d282ff00cad20", //TokenManager2 createToken
-			"0x8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0", //TokenManager2 OwnershipTransferred [previousOwner=零地址：createToken]
+			//TopicManager2CreateEvent1, //TokenManager2 createToken
+			TopicManager2OwnershipTransferred, //TokenManager2 OwnershipTransferred [previousOwner=零地址：createToken]
 
 			//"0x741ffc4605df23259462547defeab4f6e755bdc5fbb6d0820727d6d3400c7e0d", // Signature/Relay Confirm
 			//"0x3d0ce9bfc3ed7d6862dbb28b2dea94561fe714a1b4d019aa8af39730d1ad7c3d", // SafeReceived (BNB) fee

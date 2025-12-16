@@ -35,7 +35,7 @@ func StartSpecificTokenSubscription(tokenAddr string) {
 
 	client := manager.GetClient()
 
-	transferTopic := common.HexToHash(config.TransferTopic)
+	transferTopic := common.HexToHash(config.TopicTransfer)
 	query := ethereum.FilterQuery{
 		Addresses: []common.Address{common.HexToAddress(tokenAddr)},
 		Topics: [][]common.Hash{

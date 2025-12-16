@@ -50,7 +50,7 @@ func main() {
 	//event.StartAllListeners()
 	// 启动主流程：区块轮询监听
 	manager.WG.Add(1)
-	go event.StartBlockPolling(10 * time.Second) // 每 10 秒轮询一次
+	go event.StartBlockPolling(3 * time.Second) // 每 3 秒轮询一次
 
 	// 7. 启动盈亏监控
 	manager.WG.Add(1)

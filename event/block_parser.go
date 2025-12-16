@@ -109,9 +109,8 @@ func processBlockReceipts(blockNum *big.Int) {
 	log.LogInfo("区块 %d | 总日志: %d ", blockNum, len(allLogs))
 
 	//常规过滤meme
-	vLog := filterMemeTransferLogs(allLogs)
 	target := config.DefaultMonitorTargets[0]
-	HandleEventV2(vLog, allLogs, target)
+	HandleEventV2(allLogs, target)
 
 	//for _, vLog := range allLogs {
 	//	target := findTargetByAddress(vLog.Address.Hex())
