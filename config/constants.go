@@ -47,6 +47,7 @@ const (
 var (
 	DefaultFourmemeManagerAddr = common.HexToAddress(DefaultFourmemeManager)
 	AddrTokenManagerHelper3    = common.HexToAddress(TokenManagerHelper3)
+	AddrTokenManager1          = common.HexToAddress(TokenManager1)
 	PancakeFactory             = common.HexToAddress(PancakeFactoryAddr)
 	PancakeRouter              = common.HexToAddress(PancakeRouterAddr)
 	WBNB                       = common.HexToAddress(WBNBAddr)

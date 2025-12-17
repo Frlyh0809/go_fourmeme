@@ -23,7 +23,7 @@ func StartTokenListener(target *configentity.MonitorTarget) {
 		return
 	}
 
-	client := manager.GetClient()
+	client := manager.GetEthClient()
 
 	var addresses []common.Address
 

@@ -21,7 +21,7 @@ import (
 
 // BuyTokenSecondary 二级市场买入 (PancakeSwap swapExactETHForTokens)
 func BuyTokenSecondary(target *configentity.MonitorTarget, tokenAddr string) (string, error) {
-	client := manager.GetClient()
+	client := manager.GetEthClient()
 
 	amountInWei := ToWei(target.BuyAmountBNB)
 	if amountInWei.Sign() == 0 {
@@ -87,7 +87,7 @@ func BuyTokenSecondary(target *configentity.MonitorTarget, tokenAddr string) (st
 
 // SellTokenSecondary 二级市场卖出 (swapExactTokensForETH)
 func SellTokenSecondary(tokenAddr string, tokenAmount *big.Int, slippage float64) (string, error) {
-	client := manager.GetClient()
+	client := manager.GetEthClient()
 
 	if tokenAmount.Sign() == 0 {
 		return "", fmt.Errorf("卖出金额为0")

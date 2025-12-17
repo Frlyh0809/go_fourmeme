@@ -27,6 +27,32 @@ func SaveTxRecord(record *po.TransactionRecord) error {
 	return nil
 }
 
+func SaveTransaction(tx *po.Transaction) error {
+	result := DB.Create(tx)
+	if result.Error != nil {
+		log.LogError("数据库插入失败: %v", result.Error)
+		return result.Error
+	}
+	if result.RowsAffected == 0 {
+		log.LogWarn("插入 0 行，可能主键冲突 TxUniqueSeq: %s", tx.TxUniqueSeq)
+	} else {
+		log.LogInfo("插入成功 TxUniqueSeq: %s | Rows: %d", tx.TxUniqueSeq, result.RowsAffected)
+	}
+	return nil
+}
+
+func SaveTransactionCreate(tx *po.TransactionCreate) error {
+	result := DB.Create(tx)
+	if result.Error != nil {
+		log.LogError("数据库插入失败 (create): %v", result.Error)
+		return result.Error
+	}
+	if result.RowsAffected == 0 {
+		log.LogWarn("插入 0 行 (create)，可能主键冲突: %s", tx.TxUniqueSeq)
+	}
+	return nil
+}
+
 // UpdateTxStatus 更新交易状态（例如 pending → success/failed）
 func UpdateTxStatus(txHash, status, errorMsg string) error {
 	updates := map[string]interface{}{

@@ -37,14 +37,14 @@ func main() {
 
 	// 4. 初始化数据库
 	database.InitDB()
-
+	client.InitBnbPriceCache()
 	// 5. 连接客户端并设置全局
-	client, err := client.NewClientWithRetry(5, 5*time.Second)
+	ethClient, err := client.NewEthClientWithRetry(5, 5*time.Second)
 	if err != nil {
 		log.LogFatal("BSC 客户端连接失败: %v", err)
 	}
-	manager.SetClient(client)
-	defer client.Close()
+	manager.SetEthClient(ethClient)
+	defer ethClient.Close()
 
 	// 6. 启动所有监听
 	//event.StartAllListeners()

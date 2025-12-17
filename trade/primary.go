@@ -23,7 +23,7 @@ import (
 
 // BuyTokenViaManager 一级市场买入 (通过 Helper3 buyWithEth)
 func BuyTokenViaManager(target *configentity.MonitorTarget, tokenAddr string) (string, error) {
-	client := manager.GetClient()
+	client := manager.GetEthClient()
 
 	amountInWei := ToWei(target.BuyAmountBNB)
 	if amountInWei.Sign() == 0 {
@@ -112,7 +112,7 @@ func BuyTokenViaManager(target *configentity.MonitorTarget, tokenAddr string) (s
 
 // SellTokenViaManager 一级市场卖出 (通过 Helper3 sellForEth)
 func SellTokenViaManager(tokenAddr string, amountIn *big.Int, slippage float64) (string, error) {
-	client := manager.GetClient()
+	client := manager.GetEthClient()
 
 	if amountIn.Sign() == 0 {
 		return "", fmt.Errorf("卖出金额为0")

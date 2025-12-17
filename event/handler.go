@@ -2,8 +2,11 @@
 package event
 
 import (
+	"fmt"
+	"go_fourmeme/client"
 	"go_fourmeme/database"
 	"math/big"
+	"strconv"
 	"time"
 
 	"go_fourmeme/config"
@@ -17,8 +20,255 @@ import (
 	"github.com/ethereum/go-ethereum/core/types"
 )
 
-// HandleEventV2 完整买卖解析（结合自定义事件 + Transfer）
+// HandleEventV2 从整个区块日志中解析所有 Fourmeme 事件（创建 + 买卖 + 入库）
 func HandleEventV2(allLogs []types.Log, receipt *types.Receipt, target *configentity.MonitorTarget) {
+	if len(allLogs) == 0 {
+		return
+	}
+
+	blockNum := receipt.BlockNumber.Uint64()
+	txHash := receipt.TxHash.Hex()
+	txIndex := receipt.TransactionIndex
+
+	// 1. Token 创建/销毁/转移识别 (OwnershipTransferred)
+	for _, vLog := range allLogs {
+		if len(vLog.Topics) == 0 {
+			continue
+		}
+		if vLog.Topics[0] == config.HashOwnershipTransferred && len(vLog.Topics) >= 3 {
+			previousOwner := common.BytesToAddress(vLog.Topics[1].Bytes())
+			newOwner := common.BytesToAddress(vLog.Topics[2].Bytes())
+			tokenAddr := vLog.Address.Hex()
+
+			// 解析真实 creator
+			isCreator, creator := parseCreator(allLogs, vLog.Address)
+			realCreator := previousOwner.Hex() // 默认 previousOwner
+			if isCreator {
+				realCreator = creator
+			}
+
+			var recordType int
+			var send, receive string
+
+			if previousOwner == config.AddrZero {
+				// 创建
+				recordType = 0
+				send = previousOwner.Hex()
+				receive = newOwner.Hex()
+				log.LogInfo("【新 Token 创建】Token: %s | Creator: %s | blockNum:%d | hash:%s ", tokenAddr, realCreator, blockNum, txHash)
+			} else if newOwner == config.AddrZero {
+				// 销毁
+				recordType = 8
+				send = previousOwner.Hex()
+				receive = newOwner.Hex()
+				log.LogInfo("【Token 销毁】Token: %s | Creator: %s | blockNum:%d | hash:%s ", tokenAddr, realCreator, blockNum, txHash)
+			} else if isFourmemeManager(newOwner) {
+				// 移交 fourMeme (owner 转移)
+				recordType = 7
+				send = previousOwner.Hex()
+				receive = newOwner.Hex()
+				log.LogInfo("【Token 移交fourMeme】Token: %s | Creator: %s | blockNum:%d | hash:%s ", tokenAddr, realCreator, blockNum, txHash)
+			} else {
+				// 其他转移
+				recordType = 7
+				send = previousOwner.Hex()
+				receive = newOwner.Hex()
+				log.LogInfo("【Token Owner 转移】Token: %s | From: %s | To: %s | blockNum:%d | hash:%s ", tokenAddr, previousOwner.Hex(), newOwner.Hex(), blockNum, txHash)
+			}
+
+			// 入库 transaction_create
+			createRecord := &po.TransactionCreate{
+				TxUniqueSeq:     utils.CalcTxUniqueSeq(blockNum, vLog.TxIndex, vLog.Index),
+				BlockNumber:     strconv.FormatUint(blockNum, 10),
+				TxIndex:         fmt.Sprintf("%d", txIndex),
+				TxHash:          txHash,
+				Send:            send,
+				Receive:         receive,
+				Type:            recordType,
+				Protocol:        "managerV2", // 根据实际判断 v1/v2/helper3
+				ProtocolAddress: vLog.Address.Hex(),
+				TokenAddress:    tokenAddr,
+				PaymentToken:    "", // 创建/销毁无支付
+				TokenAmount:     "",
+				PaymentAmount:   "",
+				Price:           "",
+				Volume:          "",
+				CreatedAt:       time.Now(),
+			}
+			if err := database.SaveTransactionCreate(createRecord); err != nil {
+				log.LogError("保存创建/转移记录失败: %v", err)
+			}
+			break
+		}
+	}
+
+	// 2. 买卖识别：匹配自定义事件
+	var tradeInfo struct {
+		TokenAddr    common.Address
+		Buyer        common.Address
+		TokenAmount  *big.Int
+		BNBAmount    *big.Int
+		BNBFeeAmount *big.Int
+		IsUSD1       bool
+		TxHash       common.Hash
+	}
+
+	foundCustom := false
+	var protocol = "managerV2"
+	var protocolAddress = config.DefaultFourmemeManagerAddr
+	for _, logData := range allLogs {
+		if len(logData.Topics) == 0 {
+			continue
+		}
+
+		t0 := logData.Topics[0]
+		if t0 == config.HashManager1Event1 || t0 == config.HashManager1Event2 ||
+			t0 == config.HashManager2Event1 || t0 == config.HashManager2Event2 {
+
+			words := utils.SplitDataToWords(logData.Data)
+
+			tradeInfo.TokenAddr = common.BytesToAddress(words[0].Bytes())
+			tradeInfo.Buyer = common.BytesToAddress(words[1].Bytes())
+			if t0 == config.HashManager1Event1 || t0 == config.HashManager1Event2 {
+				if len(words) < 5 {
+					continue
+				}
+				tradeInfo.TokenAmount = words[2]
+				tradeInfo.BNBAmount = words[3]
+				tradeInfo.BNBFeeAmount = words[4]
+
+				protocol = "managerV1"
+				protocolAddress = config.AddrTokenManager1
+			} else { // Manager2 / Helper3
+				if len(words) < 6 {
+					continue
+				}
+				tradeInfo.TokenAmount = words[3]
+				tradeInfo.BNBAmount = words[4]
+				tradeInfo.BNBFeeAmount = words[5]
+			}
+
+			tradeInfo.TxHash = logData.TxHash
+
+			// 检测 USD1 支付
+			for _, l := range allLogs {
+				if l.Address == config.AddrUSD1 && l.Topics[0] == config.HashTransfer {
+					if len(l.Topics) == 3 {
+						if common.BytesToAddress(words[1].Bytes()) == config.AddrTokenManagerHelper3 || common.BytesToAddress(words[2].Bytes()) == config.AddrTokenManagerHelper3 {
+							tradeInfo.IsUSD1 = true
+							protocol = "managerV3"
+							protocolAddress = config.AddrTokenManagerHelper3
+							break
+						}
+					}
+				}
+			}
+
+			foundCustom = true
+			break
+		}
+	}
+
+	if !foundCustom {
+		return // 无自定义事件，不处理
+	}
+
+	// 3. 用 Transfer 事件确认方向
+	for _, vLog := range allLogs {
+		if vLog.Topics[0] == config.HashTransfer && vLog.Address == tradeInfo.TokenAddr {
+			from := common.BytesToAddress(vLog.Topics[1].Bytes())
+			to := common.BytesToAddress(vLog.Topics[2].Bytes())
+			value := new(big.Int).SetBytes(vLog.Data)
+
+			//log.LogInfo("【Token 交易】Token: %s | trader: %s | TokenAmount:%d  | BNBAmount:%d | value:%d | hash:%s ",
+			//	tradeInfo.TokenAddr.Hex(), tradeInfo.Buyer.Hex(), tradeInfo.TokenAmount, tradeInfo.BNBAmount, value, txHash)
+
+			if value.Cmp(tradeInfo.TokenAmount) != 0 {
+				continue
+			}
+
+			payment := "BNB"
+			paymentToken := config.ZeroAddress
+			if tradeInfo.IsUSD1 {
+				payment = "USD1"
+				paymentToken = config.USD1Address
+			}
+
+			var recordType int
+			var send, receive string
+
+			if isFourmemeManager(to) {
+				// 卖出
+				recordType = 4
+				send = from.Hex()
+				receive = to.Hex()
+				log.LogInfo("【卖出】Token: %s | Seller: %s | Token: %s | Pay: %s %s | Tx: %s",
+					tradeInfo.TokenAddr.Hex(), tradeInfo.Buyer.Hex(), tradeInfo.TokenAmount.String(),
+					payment, tradeInfo.BNBAmount.String(), tradeInfo.TxHash.Hex())
+
+			} else if isFourmemeManager(from) {
+				// 买入
+				recordType = 3
+				send = from.Hex()
+				receive = to.Hex()
+				log.LogInfo("【买入】Token: %s | Buyer: %s | Token: %s | Pay: %s %s | Tx: %s",
+					tradeInfo.TokenAddr.Hex(), tradeInfo.Buyer.Hex(), tradeInfo.TokenAmount.String(),
+					payment, tradeInfo.BNBAmount.String(), tradeInfo.TxHash.Hex())
+
+				if target != nil {
+					//TODO 交易
+					//go trade.BuyTokenViaManager(target, tradeInfo.TokenAddr.Hex())
+				}
+			} else {
+				// 普通 Transfer
+				recordType = 5
+				send = from.Hex()
+				receive = to.Hex()
+				log.LogInfo("【Transfer】Token: %s | From: %s | To: %s | Amount: %s | Tx: %s",
+					tradeInfo.TokenAddr.Hex(), from.Hex(), to.Hex(),
+					tradeInfo.TokenAmount.String(), tradeInfo.TxHash.Hex())
+			}
+			bnbPrice := client.GetBNBPriceUSDT()
+			tokenAmountDis := utils.Div10Pow(tradeInfo.TokenAmount, big.NewInt(18))
+			bnbAmountDis := utils.Div10Pow(tradeInfo.BNBAmount, big.NewInt(18))
+			price := utils.DivFloat(bnbAmountDis, tokenAmountDis)
+			volume := bnbAmountDis
+			if payment == "USD1" {
+				//单位使用bnb
+				price = new(big.Float).Mul(price, big.NewFloat(bnbPrice))
+				volume = new(big.Float).Mul(volume, big.NewFloat(bnbPrice))
+			}
+
+			// 入库 transaction
+			txRecord := &po.Transaction{
+				TxUniqueSeq:     utils.CalcTxUniqueSeq(blockNum, vLog.TxIndex, vLog.Index),
+				BlockNumber:     strconv.FormatUint(blockNum, 10),
+				TxIndex:         fmt.Sprintf("%d", vLog.TxIndex),
+				TxHash:          txHash,
+				Send:            send,
+				Receive:         receive,
+				Type:            recordType,
+				Protocol:        protocol, // 根据实际判断
+				ProtocolAddress: protocolAddress.Hex(),
+				TokenAddress:    tradeInfo.TokenAddr.Hex(),
+				PaymentToken:    paymentToken,
+				TokenAmount:     utils.BigFloatToString(tokenAmountDis), // string
+				PaymentAmount:   utils.BigFloatToString(bnbAmountDis),   // string
+				Price:           utils.BigFloatToString(price),
+				Volume:          utils.BigFloatToString(volume),
+				CreatedAt:       time.Now(),
+			}
+			if err := database.SaveTransaction(txRecord); err != nil {
+				log.LogError("保存 transaction 记录失败: %v", err)
+			}
+
+			break
+		}
+	}
+}
+
+// HandleEventV2 完整买卖解析（结合自定义事件 + Transfer）
+func HandleEventV1(allLogs []types.Log, receipt *types.Receipt, target *configentity.MonitorTarget) {
 	if len(allLogs) == 0 {
 		return
 	}

@@ -43,7 +43,7 @@ func StartBlockPolling(interval time.Duration) {
 
 // pollNewBlocks 轮询新区块，并发处理
 func pollNewBlocks() {
-	client := manager.GetClient()
+	client := manager.GetEthClient()
 
 	header, err := client.HeaderByNumber(context.Background(), nil)
 	if err != nil {
@@ -81,7 +81,7 @@ func pollNewBlocks() {
 
 // processBlockReceipts 使用 eth_getBlockReceipts 获取整个区块所有 Receipt
 func processBlockReceipts(blockNum *big.Int) {
-	client := manager.GetClient()
+	client := manager.GetEthClient()
 
 	// 构造 BlockNumberOrHash
 	blockNumber := rpc.BlockNumber(blockNum.Int64())

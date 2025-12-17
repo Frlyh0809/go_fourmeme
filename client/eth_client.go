@@ -1,4 +1,4 @@
-// client/client.go
+// client/eth_client.go
 package client
 
 import (
@@ -12,9 +12,9 @@ import (
 	"github.com/ethereum/go-ethereum/ethclient"
 )
 
-// NewClient 创建 BSC 客户端
+// NewEthClient 创建 BSC 客户端
 // 支持 WebSocket（推荐，用于实时订阅）和 HTTP fallback
-func NewClient() (*ethclient.Client, error) {
+func NewEthClient() (*ethclient.Client, error) {
 	var cli *ethclient.Client
 	var err error
 
@@ -44,10 +44,10 @@ func NewClient() (*ethclient.Client, error) {
 	return nil, fmt.Errorf("无可用节点 URL 配置")
 }
 
-// NewClientWithRetry 带重试的客户端创建（推荐用于生产）
-func NewClientWithRetry(maxRetries int, retryInterval time.Duration) (*ethclient.Client, error) {
+// NewEthClientWithRetry 带重试的客户端创建（推荐用于生产）
+func NewEthClientWithRetry(maxRetries int, retryInterval time.Duration) (*ethclient.Client, error) {
 	for i := 0; i <= maxRetries; i++ {
-		cli, err := NewClient()
+		cli, err := NewEthClient()
 		if err == nil {
 			return cli, nil
 		}

@@ -33,7 +33,7 @@ func StartSpecificTokenSubscription(tokenAddr string) {
 	tokenSubs[tokenAddr] = logsChan
 	tokenSubsMu.Unlock()
 
-	client := manager.GetClient()
+	client := manager.GetEthClient()
 
 	transferTopic := common.HexToHash(config.TopicTransfer)
 	query := ethereum.FilterQuery{

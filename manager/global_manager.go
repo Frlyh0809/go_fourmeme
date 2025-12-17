@@ -9,22 +9,22 @@ import (
 
 // 全局状态变量
 var (
-	Client       *ethclient.Client
+	EthClient    *ethclient.Client
 	WG           sync.WaitGroup
 	ShutdownChan = make(chan struct{})
 )
 
-// SetClient 设置全局客户端（main 中调用一次）
-func SetClient(c *ethclient.Client) {
-	Client = c
+// SetEthClient 设置全局客户端（main 中调用一次）
+func SetEthClient(c *ethclient.Client) {
+	EthClient = c
 }
 
-// GetClient 获取全局客户端（其他包安全调用）
-func GetClient() *ethclient.Client {
-	if Client == nil {
-		panic("ethclient 未初始化，请先调用 SetClient")
+// GetEthClient 获取全局客户端（其他包安全调用）
+func GetEthClient() *ethclient.Client {
+	if EthClient == nil {
+		panic("ethclient 未初始化，请先调用 SetEthClient")
 	}
-	return Client
+	return EthClient
 }
 
 // CloseShutdown 优雅关闭（可选扩展）

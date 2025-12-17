@@ -3,10 +3,10 @@ package database
 
 import (
 	"go_fourmeme/config"
-	"go_fourmeme/entity/po" // 数据库实体
 	"go_fourmeme/log"
 
-	"gorm.io/driver/sqlite" // 可替换为 postgres/mysql
+	//"gorm.io/driver/sqlite" // 可替换为 postgres/mysql
+	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 )
 
@@ -16,23 +16,31 @@ var DB *gorm.DB
 func InitDB() {
 	dsn := config.BSCChain.DBDSN
 	if dsn == "" {
-		dsn = "fourmeme_transactions.db" // 默认本地 SQLite
-		log.LogInfo("使用默认 SQLite 数据库: %s", dsn)
+		dsn = "fourmeme_transactions.db" //
+		log.LogInfo("使用默认 MySQL 数据库: %s", dsn)
 	}
 
 	var err error
-	DB, err = gorm.Open(sqlite.Open(dsn), &gorm.Config{
-		DisableForeignKeyConstraintWhenMigrating: true,
-	})
+	//DB, err = gorm.Open(sqlite.Open(dsn), &gorm.Config{
+	//	DisableForeignKeyConstraintWhenMigrating: true,
+	//})
+	DB, err = gorm.Open(mysql.Open(dsn), &gorm.Config{})
+	if err != nil {
+		log.LogFatal("MySQL 连接失败: %v", err)
+	}
 	if err != nil {
 		log.LogFatal("数据库连接失败: %v", err)
 	}
 
 	// 自动迁移实体表
-	err = DB.AutoMigrate(&po.TransactionRecord{})
-	if err != nil {
-		log.LogFatal("数据库表迁移失败: %v", err)
-	}
+	//err = DB.AutoMigrate(
+	//	&po.TransactionRecord{},
+	//	&po.Transaction{},
+	//	&po.TransactionCreate{},
+	//)
+	//if err != nil {
+	//	log.LogFatal("数据库表迁移失败: %v", err)
+	//}
 
 	log.LogInfo("数据库初始化成功 (DSN: %s)", dsn)
 }

@@ -43,7 +43,7 @@ func printJSON(t *testing.T, name string, result interface{}, err error) {
 
 // 创建客户端的公共函数（每个测试独立创建，避免状态污染）
 func newTestClient(t *testing.T) *ethclient.Client {
-	cli, err := client.NewClient()
+	cli, err := client.NewEthClient()
 	if err != nil {
 		t.Fatalf("创建 ethclient 失败: %v", err)
 	}
