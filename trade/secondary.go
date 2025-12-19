@@ -77,7 +77,7 @@ func BuyTokenSecondary(target *configentity.MonitorTarget, tokenAddr string) (st
 	}
 
 	txHash := signedTx.Hash().Hex()
-	log.LogInfo("二级买入提交成功 Tx: %s Token: %s Amount: %.6f BNB", txHash, tokenAddr[:10], target.BuyAmountBNB.Text('f', 6))
+	log.LogInfo("二级买入提交成功 Tx: %s Token: %s Amount: %s BNB", txHash, tokenAddr[:10], target.BuyAmountBNB.Text('f', 6))
 
 	// 添加持仓 (二级无 Manager Transfer，估算 tokenOut)
 	addPositionFromEstimate(tokenAddr, txHash, target, minAmountOut)

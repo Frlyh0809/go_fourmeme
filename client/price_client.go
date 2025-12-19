@@ -49,7 +49,7 @@ func GetBNBPriceUSDT() float64 {
 	}
 
 	// 查询失败返回 0（调用方可处理）
-	return 0
+	return 800
 }
 
 // updateBNBPrice 实时查询并更新缓存

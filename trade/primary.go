@@ -30,6 +30,8 @@ func BuyTokenViaManager(target *configentity.MonitorTarget, tokenAddr string) (s
 		return "", fmt.Errorf("买入金额为0")
 	}
 
+	log.LogInfo("准备买入 Token: %s | AmountInWei: %s | AmountBNB: %s", tokenAddr, amountInWei.String(), target.BuyAmountBNB.String())
+
 	// 滑点预估 (使用 calcTokenOut)
 	minAmountOut, err := calcSlippageMinOut(client, tokenAddr, amountInWei, target.SlippageTolerance)
 	if err != nil {
@@ -91,7 +93,8 @@ func BuyTokenViaManager(target *configentity.MonitorTarget, tokenAddr string) (s
 	}
 
 	txHash := signedTx.Hash().Hex()
-	log.LogInfo("一级买入提交成功 Tx: %s Token: %s Amount: %.6f BNB", txHash, tokenAddr[:10], target.BuyAmountBNB.Text('f', 6))
+	//log.LogInfo("一级买入提交成功 Tx: %s Token: %s Amount: %.6f BNB", txHash, tokenAddr[:10], target.BuyAmountBNB.Text('f', 6))
+	log.LogInfo("一级买入提交成功 Tx: %s Token: %s Amount: %s BNB", txHash, tokenAddr[:10], target.BuyAmountBNB.Text('f', 6))
 
 	// 等待收据 + 添加持仓
 	receipt, err := waitForReceipt(client, signedTx.Hash())
