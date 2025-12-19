@@ -40,7 +40,7 @@ func LoadABIs() error {
 		path := filepath.Join(rootDir, filename)
 		data, err := ioutil.ReadFile(path)
 		if err != nil {
-			log.LogWarn("ABI 文件未找到或读取失败: %s (%v)，部分功能可能不可用", filename, err)
+			log.LogWarn("ABI 文件未找到或读取失败: %s (%v1)，部分功能可能不可用", filename, err)
 			continue
 		}
 
@@ -48,7 +48,7 @@ func LoadABIs() error {
 		cleanData := strings.TrimSpace(string(data))
 
 		if err := json.Unmarshal([]byte(cleanData), target); err != nil {
-			log.LogError("解析 ABI JSON 失败: %s (%v)", filename, err)
+			log.LogError("解析 ABI JSON 失败: %s (%v1)", filename, err)
 			return err
 		}
 

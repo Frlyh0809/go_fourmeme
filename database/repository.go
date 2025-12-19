@@ -19,7 +19,7 @@ func SaveTxRecord(record *po.TransactionRecord) error {
 	record.Timestamp = time.Now()
 
 	if err := DB.Create(record).Error; err != nil {
-		log.LogError("保存交易记录失败 (Tx: %s): %v", record.TxHash[:10], err)
+		log.LogError("保存交易记录失败 (Tx: %s): %v1", record.TxHash[:10], err)
 		return err
 	}
 
@@ -30,7 +30,7 @@ func SaveTxRecord(record *po.TransactionRecord) error {
 func SaveTransaction(tx *po.Transaction) error {
 	result := DB.Create(tx)
 	if result.Error != nil {
-		log.LogError("数据库插入失败: %v", result.Error)
+		log.LogError("数据库插入失败: %v1", result.Error)
 		return result.Error
 	}
 	if result.RowsAffected == 0 {
@@ -44,7 +44,7 @@ func SaveTransaction(tx *po.Transaction) error {
 func SaveTransactionCreate(tx *po.TransactionCreate) error {
 	result := DB.Create(tx)
 	if result.Error != nil {
-		log.LogError("数据库插入失败 (create): %v", result.Error)
+		log.LogError("数据库插入失败 (create): %v1", result.Error)
 		return result.Error
 	}
 	if result.RowsAffected == 0 {
@@ -63,7 +63,7 @@ func UpdateTxStatus(txHash, status, errorMsg string) error {
 	}
 
 	if err := DB.Model(&po.TransactionRecord{}).Where("tx_hash = ?", txHash).Updates(updates).Error; err != nil {
-		log.LogError("更新交易状态失败 (Tx: %s): %v", txHash[:10], err)
+		log.LogError("更新交易状态失败 (Tx: %s): %v1", txHash[:10], err)
 		return err
 	}
 

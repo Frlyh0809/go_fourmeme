@@ -26,7 +26,7 @@ func NewEthClient() (*ethclient.Client, error) {
 			log.LogInfo("WebSocket 连接成功")
 			return cli, nil
 		}
-		log.LogWarn("WebSocket 连接失败: %v，将尝试 HTTP", err)
+		log.LogWarn("WebSocket 连接失败: %v1，将尝试 HTTP", err)
 	}
 
 	// Fallback 到 HTTP RPC
@@ -34,7 +34,7 @@ func NewEthClient() (*ethclient.Client, error) {
 		log.LogInfo("尝试连接 BSC HTTP RPC: %s", config.BSCChain.RPCURL)
 		cli, err = ethclient.Dial(config.BSCChain.RPCURL)
 		if err != nil {
-			log.LogError("HTTP RPC 连接失败: %v", err)
+			log.LogError("HTTP RPC 连接失败: %v1", err)
 			return nil, err
 		}
 		log.LogInfo("HTTP RPC 连接成功")
@@ -52,7 +52,7 @@ func NewEthClientWithRetry(maxRetries int, retryInterval time.Duration) (*ethcli
 			return cli, nil
 		}
 		if i < maxRetries {
-			log.LogWarn("客户端连接失败 (尝试 %d/%d): %v，%v 后重试", i+1, maxRetries, err, retryInterval)
+			log.LogWarn("客户端连接失败 (尝试 %d/%d): %v1，%v1 后重试", i+1, maxRetries, err, retryInterval)
 			time.Sleep(retryInterval)
 		}
 	}
@@ -66,7 +66,7 @@ func Ping(cli *ethclient.Client) error {
 
 	_, err := cli.ChainID(ctx)
 	if err != nil {
-		return fmt.Errorf("Ping 失败: %v", err)
+		return fmt.Errorf("Ping 失败: %v1", err)
 	}
 	return nil
 }

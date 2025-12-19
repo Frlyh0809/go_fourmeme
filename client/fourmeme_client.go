@@ -63,7 +63,7 @@ func GetTokenStatus(tokenAddr string) TokenInfo {
 	// Pack 输入
 	input, err := helperABI.Pack("getTokenInfo", common.HexToAddress(tokenAddr))
 	if err != nil {
-		log.LogError("Pack getTokenInfo 失败: %v", err)
+		log.LogError("Pack getTokenInfo 失败: %v1", err)
 		return TokenInfo{Status: StatusUnknown}
 	}
 
@@ -73,7 +73,7 @@ func GetTokenStatus(tokenAddr string) TokenInfo {
 		Data: input,
 	}, nil)
 	if err != nil {
-		log.LogWarn("调用 getTokenInfo 失败 (Token: %s): %v", tokenAddr[:10], err)
+		log.LogWarn("调用 getTokenInfo 失败 (Token: %s): %v1", tokenAddr[:10], err)
 		return TokenInfo{Status: StatusUnknown}
 	}
 
@@ -95,7 +95,7 @@ func GetTokenStatus(tokenAddr string) TokenInfo {
 
 	err = helperABI.UnpackIntoInterface(&info, "getTokenInfo", output)
 	if err != nil {
-		log.LogError("解包 getTokenInfo 失败: %v", err)
+		log.LogError("解包 getTokenInfo 失败: %v1", err)
 		return TokenInfo{Status: StatusUnknown}
 	}
 
@@ -106,7 +106,7 @@ func GetTokenStatus(tokenAddr string) TokenInfo {
 	}
 	// 其他状态（如 HALT）需额外查询或从 Funds/Offers 推断，这里简化
 
-	//log.LogInfo("Token %s 状态查询成功: LiquidityAdded=%v | Offers=%s | Funds=%s",
+	//log.LogInfo("Token %s 状态查询成功: LiquidityAdded=%v1 | Offers=%s | Funds=%s",
 	//	tokenAddr[:10], info.LiquidityAdded, info.Offers.String(), info.Funds.String())
 	log.LogInfo(`Token %s 状态详情:
     Version:        %s
@@ -120,7 +120,7 @@ func GetTokenStatus(tokenAddr string) TokenInfo {
     MaxOffers:      %s
     Funds:          %s
     MaxFunds:       %s
-    LiquidityAdded: %v
+    LiquidityAdded: %v1
     Status:         %s`,
 		tokenAddr[:10],
 		info.Version.String(),

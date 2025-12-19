@@ -1,4 +1,4 @@
-package primary_market
+package v3
 
 import (
 	"context"
@@ -37,7 +37,7 @@ func BuyTokenViaManager(target *configentity.MonitorTarget, tokenAddr string) (s
 
 	minAmountOut, err := client.LocalCalcMinAmountOut(info, amountInWei, target.SlippageTolerance)
 	if err != nil {
-		log.LogWarn("本地滑点计算失败，使用保守值: %v", err)
+		log.LogWarn("本地滑点计算失败，使用保守值: %v1", err)
 		// 保守 fallback：amountInWei * (1 - slippage)，假设slippage是0-1的小数
 		slippagePercent := new(big.Int).SetInt64(int64(target.SlippageTolerance * 100))
 		minAmountOut = new(big.Int).Mul(amountInWei, new(big.Int).Sub(big.NewInt(100), slippagePercent))
@@ -47,7 +47,7 @@ func BuyTokenViaManager(target *configentity.MonitorTarget, tokenAddr string) (s
 	// 恢复滑点预估 (假设 calcSlippageMinOut 已定义；如果未定义，可注释)
 	// minAmountOut, err = calcSlippageMinOut(ethClient, tokenAddr, amountInWei, target.SlippageTolerance)
 	// if err != nil {
-	// 	return "", fmt.Errorf("滑点计算失败: %v", err)
+	// 	return "", fmt.Errorf("滑点计算失败: %v1", err)
 	// }
 
 	helperABI := utils.GetABI("TokenManagerHelper")
@@ -56,14 +56,14 @@ func BuyTokenViaManager(target *configentity.MonitorTarget, tokenAddr string) (s
 	}
 	balance, balanceErr := ethClient.PendingBalanceAt(context.Background(), common.HexToAddress(config.BSCChain.WalletAddress))
 	if balanceErr != nil {
-		return "", fmt.Errorf("PendingBalanceAt 调用失败: %v", balanceErr)
+		return "", fmt.Errorf("PendingBalanceAt 调用失败: %v1", balanceErr)
 	}
 	log.LogInfo("-- wallet:%s balance:%d", config.BSCChain.WalletAddress, balance)
 
 	// 先用 tryBuy 预模拟，确认quote和预计输出
 	tryBuyInput, err := helperABI.Pack("tryBuy", common.HexToAddress(tokenAddr), big.NewInt(0), amountInWei) // amount=0: 按funds买
 	if err != nil {
-		return "", fmt.Errorf("Pack tryBuy 失败: %v", err)
+		return "", fmt.Errorf("Pack tryBuy 失败: %v1", err)
 	}
 	helperAddr := common.HexToAddress(config.TokenManagerHelper3)
 	callMsg := ethereum.CallMsg{
@@ -74,12 +74,12 @@ func BuyTokenViaManager(target *configentity.MonitorTarget, tokenAddr string) (s
 	}
 	result, err := ethClient.CallContract(context.Background(), callMsg, nil)
 	if err != nil {
-		return "", fmt.Errorf("tryBuy 调用失败: %v", err)
+		return "", fmt.Errorf("tryBuy 调用失败: %v1", err)
 	}
 	// Unpack tryBuy 返回值 (假设返回: uint256 amountMsgValue, uint256 amountApproval, uint256 estimatedAmount, address approvalToken)
 	unpacked, err := helperABI.Unpack("tryBuy", result)
 	if err != nil {
-		return "", fmt.Errorf("Unpack tryBuy 失败: %v", err)
+		return "", fmt.Errorf("Unpack tryBuy 失败: %v1", err)
 	}
 	amountMsgValue := unpacked[0].(*big.Int)
 	amountApproval := unpacked[1].(*big.Int)
@@ -106,20 +106,20 @@ func BuyTokenViaManager(target *configentity.MonitorTarget, tokenAddr string) (s
 		minAmountOut,
 	)
 	if err != nil {
-		return "", fmt.Errorf("Pack buyWithEth 失败: %v", err)
+		return "", fmt.Errorf("Pack buyWithEth 失败: %v1", err)
 	}
 
 	// 构建交易
 	fmt.Println("config.BSCChain.WalletAddress : ", config.BSCChain.WalletAddress)
 	nonce, nonceErr := ethClient.PendingNonceAt(context.Background(), common.HexToAddress(config.BSCChain.WalletAddress))
 	if nonceErr != nil {
-		return "", fmt.Errorf("获取 nonce 失败: %v", nonceErr)
+		return "", fmt.Errorf("获取 nonce 失败: %v1", nonceErr)
 	}
 	log.LogInfo("当前钱包 nonce: %d", nonce)
 
 	gasPrice, gasErr := ethClient.SuggestGasPrice(context.Background())
 	if gasErr != nil {
-		log.LogWarn("获取 gasPrice 失败，使用默认1 gwei: %v", gasErr)
+		log.LogWarn("获取 gasPrice 失败，使用默认1 gwei: %v1", gasErr)
 		gasPrice = big.NewInt(1000000000) // 1 gwei 默认，可调整
 	} else {
 		// 稍提高gasPrice防pending
@@ -155,7 +155,7 @@ func BuyTokenViaManager(target *configentity.MonitorTarget, tokenAddr string) (s
 		//	ErrorMsg:  err.Error(),
 		//	Timestamp: time.Now(),
 		//})
-		return "", fmt.Errorf("发送交易失败: %v", err)
+		return "", fmt.Errorf("发送交易失败: %v1", err)
 	}
 
 	txHash := signedTx.Hash().Hex()
@@ -164,7 +164,7 @@ func BuyTokenViaManager(target *configentity.MonitorTarget, tokenAddr string) (s
 	// 等待收据 + 添加持仓
 	receipt, err := trade.WaitForReceipt(ethClient, signedTx.Hash())
 	if err != nil {
-		log.LogWarn("收据获取失败，使用估算: %v", err)
+		log.LogWarn("收据获取失败，使用估算: %v1", err)
 		trade.AddPositionFromEstimate(tokenAddr, txHash, target, minAmountOut)
 		return txHash, nil
 	}

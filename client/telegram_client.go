@@ -17,7 +17,7 @@ type telegramClient struct {
 func NewTelegramClient(token string, chatID int64) *telegramClient {
 	bot, err := tgbotapi.NewBotAPI(token)
 	if err != nil {
-		log.LogError("Telegram Bot 初始化失败（推送将失效）: %v", err)
+		log.LogError("Telegram Bot 初始化失败（推送将失效）: %v1", err)
 		return &telegramClient{} // 返回空对象，Send 会直接返回错误
 	}
 	log.LogInfo("Telegram 推送客户端初始化成功")
@@ -34,7 +34,7 @@ func (t *telegramClient) Send(title, message string) error {
 
 	_, err := t.bot.Send(msg)
 	if err != nil {
-		log.LogError("Telegram 推送失败: %v", err)
+		log.LogError("Telegram 推送失败: %v1", err)
 		return err
 	}
 	return nil

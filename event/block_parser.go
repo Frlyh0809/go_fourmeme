@@ -29,7 +29,7 @@ func StartBlockPolling(interval time.Duration) {
 	ticker := time.NewTicker(interval)
 	defer ticker.Stop()
 
-	log.LogInfo("区块轮询启动 (间隔: %v)", interval)
+	log.LogInfo("区块轮询启动 (间隔: %v1)", interval)
 
 	for {
 		select {
@@ -47,7 +47,7 @@ func pollNewBlocks() {
 
 	header, err := client.HeaderByNumber(context.Background(), nil)
 	if err != nil {
-		log.LogError("获取最新区块失败: %v", err)
+		log.LogError("获取最新区块失败: %v1", err)
 		return
 	}
 
@@ -91,7 +91,7 @@ func processBlockReceipts(blockNum *big.Int) {
 
 	receipts, err := client.BlockReceipts(context.Background(), blockNrOrHash)
 	if err != nil {
-		log.LogError("eth_getBlockReceipts 失败 (区块 %d): %v", blockNum, err)
+		log.LogError("eth_getBlockReceipts 失败 (区块 %d): %v1", blockNum, err)
 		return
 	}
 	log.LogInfo("区块 %d | hash size: %d ", blockNum, len(receipts))
@@ -106,7 +106,7 @@ func processBlockReceipts(blockNum *big.Int) {
 				}
 			}
 			if len(hashLogs) > 0 {
-				//log.LogInfo("区块 %d | hash: %s | logs size: %v", blockNum, receipt.TxHash.Hex(), len(hashLogs))
+				//log.LogInfo("区块 %d | hash: %s | logs size: %v1", blockNum, receipt.TxHash.Hex(), len(hashLogs))
 				HandleEventV2(hashLogs, receipt, target)
 			}
 		}

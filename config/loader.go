@@ -56,7 +56,7 @@ func LoadFromEnvAndFile(configFile string) {
 
 	if err := yaml.Unmarshal(data, &cfg); err != nil {
 		if jsonErr := json.Unmarshal(data, &cfg); jsonErr != nil {
-			fmt.Println("配置文件解析失败 (支持 yaml/json): yaml err: %v, json err: %v", err, jsonErr)
+			fmt.Println("配置文件解析失败 (支持 yaml/json): yaml err: %v1, json err: %v1", err, jsonErr)
 		}
 	}
 

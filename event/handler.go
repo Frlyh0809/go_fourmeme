@@ -96,7 +96,7 @@ func HandleEventV2(allLogs []types.Log, receipt *types.Receipt, target *configen
 				CreatedAt:       time.Now(),
 			}
 			if err := database.SaveTransactionCreate(createRecord); err != nil {
-				log.LogError("保存创建/转移记录失败: %v", err)
+				log.LogError("保存创建/转移记录失败: %v1", err)
 			}
 			break
 		}
@@ -115,7 +115,7 @@ func HandleEventV2(allLogs []types.Log, receipt *types.Receipt, target *configen
 
 	foundCustom := false
 	var protocol = "managerV2"
-	var protocolAddress = config.DefaultFourmemeManagerAddr
+	var protocolAddress = config.AddrTokenManager2
 	for _, logData := range allLogs {
 		if len(logData.Topics) == 0 {
 			continue
@@ -259,7 +259,7 @@ func HandleEventV2(allLogs []types.Log, receipt *types.Receipt, target *configen
 				CreatedAt:       time.Now(),
 			}
 			if err := database.SaveTransaction(txRecord); err != nil {
-				log.LogError("保存 transaction 记录失败: %v", err)
+				log.LogError("保存 transaction 记录失败: %v1", err)
 			}
 
 			break
@@ -473,7 +473,7 @@ func handleTransfer(vLog types.Log, record *po.TransactionRecord, target *config
 		Value *big.Int
 	}
 	if err := utils.ERC20ABI.UnpackIntoInterface(&event, "Transfer", vLog.Data); err != nil {
-		log.LogError("Transfer unpack 失败: %v", err)
+		log.LogError("Transfer unpack 失败: %v1", err)
 		return
 	}
 	if len(vLog.Topics) >= 3 {
@@ -499,7 +499,7 @@ func handleTransfer(vLog types.Log, record *po.TransactionRecord, target *config
 
 	if isSmartWallet(event.To) && target.TriggerOnSmartWalletBuy {
 		record.Type = "smart_wallet_buy"
-		go trade.BuyTokenViaManager(target, vLog.Address.Hex())
+		go trade.Buy(target, vLog.Address.Hex())
 	}
 }
 
@@ -509,7 +509,7 @@ func handleLiquidityAdd(vLog types.Log, record *po.TransactionRecord, target *co
 	log.LogInfo("检测到添加流动性，Token: %s", vLog.Address.Hex())
 
 	if target.BuyOnLiquidityAdd {
-		go trade.BuyTokenSecondary(target, vLog.Address.Hex())
+		go trade.Buy(target, vLog.Address.Hex())
 	}
 }
 
@@ -525,12 +525,12 @@ func handleDepositConfirm(vLog types.Log, record *po.TransactionRecord, target *
 	record.Type = "deposit_confirm"
 	// raw unpack 或 ABI unpack
 	// 触发一级买入
-	go trade.BuyTokenViaManager(target, vLog.Address.Hex())
+	go trade.Buy(target, vLog.Address.Hex())
 }
 
 // 辅助函数
 func isFourmemeManager(addr common.Address) bool {
-	return addr == config.DefaultFourmemeManagerAddr || addr == common.HexToAddress(config.TokenManagerHelper3) || addr == common.HexToAddress(config.TokenManager1)
+	return addr == config.AddrTokenManager2 || addr == common.HexToAddress(config.TokenManagerHelper3) || addr == common.HexToAddress(config.TokenManager1)
 }
 
 func isSmartWallet(addr common.Address) bool {

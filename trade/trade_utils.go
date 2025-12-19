@@ -64,6 +64,7 @@ func WaitForReceipt(client *ethclient.Client, hash common.Hash) (*types.Receipt,
 	}
 }
 
+// TODO bnb也提取出来
 // ExtractTokenOutFromReceipt 从收据提取实际 token out (Manager → Wallet Transfer)
 func ExtractTokenOutFromReceipt(receipt *types.Receipt, tokenAddr string) *big.Int {
 	transferTopic := common.HexToHash("0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef")

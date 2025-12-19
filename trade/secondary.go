@@ -19,8 +19,8 @@ import (
 	"go_fourmeme/utils"
 )
 
-// BuyTokenSecondary 二级市场买入 (PancakeSwap swapExactETHForTokens)
-func BuyTokenSecondary(target *configentity.MonitorTarget, tokenAddr string) (string, error) {
+// buyTokenSecondary 二级市场买入 (PancakeSwap swapExactETHForTokens)
+func buyTokenSecondary(target *configentity.MonitorTarget, tokenAddr string) (string, error) {
 	client := manager.GetEthClient()
 
 	amountInWei := ToWei(target.BuyAmountBNB)

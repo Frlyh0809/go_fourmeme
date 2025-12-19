@@ -32,7 +32,7 @@ func main() {
 
 	// 3. 加载 ABI 文件
 	if err := utils.LoadABIs(); err != nil {
-		log.LogFatal("ABI 加载失败: %v", err)
+		log.LogFatal("ABI 加载失败: %v1", err)
 	}
 
 	// 4. 初始化数据库
@@ -41,7 +41,7 @@ func main() {
 	// 5. 连接客户端并设置全局
 	ethClient, err := client.NewEthClientWithRetry(5, 5*time.Second)
 	if err != nil {
-		log.LogFatal("BSC 客户端连接失败: %v", err)
+		log.LogFatal("BSC 客户端连接失败: %v1", err)
 	}
 	manager.SetEthClient(ethClient)
 	defer ethClient.Close()
@@ -75,10 +75,13 @@ func monitorProfitAndLoss() {
 				if pos.Sold {
 					continue
 				}
-				currentPrice, err := trade.GetCurrentTokenPrice(tokenAddr)
-				if err != nil {
-					continue
-				}
+				//currentPrice, err := trade.GetCurrentTokenPrice(tokenAddr)
+				//if err != nil {
+				//	continue
+				//}
+				//TODO 价格
+				currentPrice := big.NewFloat(0)
+
 				currentValue := new(big.Float).Mul(new(big.Float).SetInt(pos.BuyTokenAmount), currentPrice)
 				ratio := new(big.Float).Quo(currentValue, pos.BuyAmountBNB)
 
@@ -98,7 +101,7 @@ func monitorProfitAndLoss() {
 func executeSell(tokenAddr string, pos *entity.Position, reason string) {
 	txHash, err := trade.SellTokenSecondary(tokenAddr, pos.BuyTokenAmount, 0.15)
 	if err != nil {
-		log.LogError("卖出失败 [%s] %s: %v", reason, tokenAddr[:10], err)
+		log.LogError("卖出失败 [%s] %s: %v1", reason, tokenAddr[:10], err)
 		return
 	}
 	manager.MarkAsSold(tokenAddr)

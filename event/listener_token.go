@@ -45,7 +45,7 @@ func StartSpecificTokenSubscription(tokenAddr string) {
 
 	sub, err := client.SubscribeFilterLogs(context.Background(), query, logsChan)
 	if err != nil {
-		log.LogError("特定 token %s 订阅失败: %v", tokenAddr[:10], err)
+		log.LogError("特定 token %s 订阅失败: %v1", tokenAddr[:10], err)
 		return
 	}
 
@@ -55,7 +55,7 @@ func StartSpecificTokenSubscription(tokenAddr string) {
 		for {
 			select {
 			case err := <-sub.Err():
-				log.LogError("特定 token %s 订阅错误，重连: %v", tokenAddr[:10], err)
+				log.LogError("特定 token %s 订阅错误，重连: %v1", tokenAddr[:10], err)
 				time.Sleep(5 * time.Second)
 				StartSpecificTokenSubscription(tokenAddr)
 				return

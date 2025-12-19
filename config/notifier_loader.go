@@ -21,7 +21,7 @@ func LoadNotifierConfig() {
 		if chatID, err := strconv.ParseInt(chatIDStr, 10, 64); err == nil {
 			NotifierConfig.TelegramChatID = chatID
 		} else {
-			log.LogWarn("TELEGRAM_CHAT_ID 格式错误: %v", err)
+			log.LogWarn("TELEGRAM_CHAT_ID 格式错误: %v1", err)
 		}
 	}
 
@@ -35,10 +35,10 @@ func LoadNotifierConfig() {
 		if port, err := strconv.Atoi(portStr); err == nil {
 			NotifierConfig.SMTPPort = port
 		} else {
-			log.LogWarn("SMTP_PORT 格式错误: %v", err)
+			log.LogWarn("SMTP_PORT 格式错误: %v1", err)
 		}
 	}
 
-	log.LogInfo("推送配置加载完成 [总开关: %v | Telegram: %v | Email: %v]",
+	log.LogInfo("推送配置加载完成 [总开关: %v1 | Telegram: %v1 | Email: %v1]",
 		NotifierConfig.Enabled, NotifierConfig.TelegramEnabled, NotifierConfig.EmailEnabled)
 }

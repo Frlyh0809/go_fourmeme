@@ -17,7 +17,7 @@ func (m *multiNotifier) Send(title, message string) error {
 	for _, n := range m.notifiers {
 		if err := n.Send(title, message); err != nil {
 			lastErr = err
-			log.LogWarn("推送渠道失败: %v", err)
+			log.LogWarn("推送渠道失败: %v1", err)
 			continue
 		}
 		log.LogInfo("推送成功: %s", title)

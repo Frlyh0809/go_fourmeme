@@ -1,18 +1,17 @@
 // client/ethclient_test.go
-package client_test
+package temp_test
 
 import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"go_fourmeme/client"
 	"go_fourmeme/config"
 
 	//"fmt"
 	"math/big"
 	"testing"
 	"time"
-
-	"go_fourmeme/client" // 替换为你的实际包路径
 
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/common"
@@ -33,7 +32,7 @@ var (
 // 统一的 JSON 打印函数
 func printJSON(t *testing.T, name string, result interface{}, err error) {
 	if err != nil {
-		t.Errorf("✗ %s 失败: %v", name, err)
+		t.Errorf("✗ %s 失败: %v1", name, err)
 		return
 	}
 
@@ -45,7 +44,7 @@ func printJSON(t *testing.T, name string, result interface{}, err error) {
 func newTestClient(t *testing.T) *ethclient.Client {
 	cli, err := client.NewEthClient()
 	if err != nil {
-		t.Fatalf("创建 ethclient 失败: %v", err)
+		t.Fatalf("创建 ethclient 失败: %v1", err)
 	}
 	return cli
 }

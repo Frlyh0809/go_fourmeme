@@ -1,4 +1,4 @@
-package primary_market
+package temp
 
 import (
 	"context"
@@ -39,7 +39,7 @@ func BuyTokenViaManager2(target *configentity.MonitorTarget, tokenAddr string) (
 	// 本地计算 minAmount (滑点保护)
 	minAmountOut, err := client.LocalCalcMinAmountOut(info, amountInWei, target.SlippageTolerance)
 	if err != nil {
-		log.LogWarn("本地滑点计算失败，使用保守值: %v", err)
+		log.LogWarn("本地滑点计算失败，使用保守值: %v1", err)
 		slippagePercent := big.NewInt(int64(target.SlippageTolerance * 100))
 		minAmountOut = new(big.Int).Mul(amountInWei, new(big.Int).Sub(big.NewInt(100), slippagePercent))
 		minAmountOut.Div(minAmountOut, big.NewInt(100))
@@ -62,19 +62,19 @@ func BuyTokenViaManager2(target *configentity.MonitorTarget, tokenAddr string) (
 		minAmountOut, // minAmount
 	)
 	if err != nil {
-		return "", fmt.Errorf("Pack buyTokenAMAP 失败: %v", err)
+		return "", fmt.Errorf("Pack buyTokenAMAP 失败: %v1", err)
 	}
 
 	// 构建交易
 	nonce, nonceErr := ethClient.PendingNonceAt(context.Background(), common.HexToAddress(config.BSCChain.WalletAddress))
 	if nonceErr != nil {
-		return "", fmt.Errorf("获取 nonce 失败: %v", nonceErr)
+		return "", fmt.Errorf("获取 nonce 失败: %v1", nonceErr)
 	}
 	log.LogInfo("当前钱包 nonce: %d", nonce)
 
 	gasPrice, gasErr := ethClient.SuggestGasPrice(context.Background())
 	if gasErr != nil {
-		log.LogWarn("获取 gasPrice 失败，使用默认1 gwei: %v", gasErr)
+		log.LogWarn("获取 gasPrice 失败，使用默认1 gwei: %v1", gasErr)
 		gasPrice = big.NewInt(1000000000)
 	} else {
 		gasPrice.Mul(gasPrice, big.NewInt(11)).Div(gasPrice, big.NewInt(10)) // +10%
@@ -111,7 +111,7 @@ func BuyTokenViaManager2(target *configentity.MonitorTarget, tokenAddr string) (
 			ErrorMsg:  err.Error(),
 			Timestamp: time.Now(),
 		})
-		return "", fmt.Errorf("发送交易失败: %v", err)
+		return "", fmt.Errorf("发送交易失败: %v1", err)
 	}
 
 	txHash := signedTx.Hash().Hex()
@@ -120,7 +120,7 @@ func BuyTokenViaManager2(target *configentity.MonitorTarget, tokenAddr string) (
 	// 等待收据 + 添加持仓（保持你原来的逻辑）
 	receipt, err := trade.WaitForReceipt(ethClient, signedTx.Hash())
 	if err != nil {
-		log.LogWarn("收据获取失败，使用估算: %v", err)
+		log.LogWarn("收据获取失败，使用估算: %v1", err)
 		trade.AddPositionFromEstimate(tokenAddr, txHash, target, minAmountOut)
 		return txHash, nil
 	}
@@ -156,7 +156,7 @@ func SellTokenViaManager2(target *configentity.MonitorTarget, tokenAddr string, 
 	// 本地计算 minFunds (滑点保护，预期最低BNB输出)
 	minFunds, err := client.LocalCalcMinAmountOut(info, balance, target.SlippageTolerance) // 假设你有这个反向计算方法
 	if err != nil {
-		log.LogWarn("本地滑点计算失败，使用保守值: %v", err)
+		log.LogWarn("本地滑点计算失败，使用保守值: %v1", err)
 		slippagePercent := big.NewInt(int64(target.SlippageTolerance * 100))
 		minFunds = new(big.Int).Mul(balance, new(big.Int).Sub(big.NewInt(100), slippagePercent))
 		minFunds.Div(minFunds, big.NewInt(100))
@@ -186,7 +186,7 @@ func SellTokenViaManager2(target *configentity.MonitorTarget, tokenAddr string, 
 	}
 	result, err := ethClient.CallContract(context.Background(), callMsg, nil)
 	if err != nil {
-		return "", fmt.Errorf("查询allowance失败: %v", err)
+		return "", fmt.Errorf("查询allowance失败: %v1", err)
 	}
 	currentAllowance := new(big.Int)
 	tokenABI.UnpackIntoInterface(&currentAllowance, "allowance", result)
@@ -196,7 +196,7 @@ func SellTokenViaManager2(target *configentity.MonitorTarget, tokenAddr string, 
 
 		approveInput, err := tokenABI.Pack("approve", managerAddr, balance)
 		if err != nil {
-			return "", fmt.Errorf("Pack approve 失败: %v", err)
+			return "", fmt.Errorf("Pack approve 失败: %v1", err)
 		}
 
 		nonce, _ := ethClient.PendingNonceAt(context.Background(), walletAddress)
@@ -222,14 +222,14 @@ func SellTokenViaManager2(target *configentity.MonitorTarget, tokenAddr string, 
 
 		err = ethClient.SendTransaction(context.Background(), signedApproveTx)
 		if err != nil {
-			return "", fmt.Errorf("Approve交易发送失败: %v", err)
+			return "", fmt.Errorf("Approve交易发送失败: %v1", err)
 		}
 		log.LogInfo("Approve提交成功 Tx: %s", signedApproveTx.Hash().Hex())
 
 		// 等待approve确认
 		_, err = trade.WaitForReceipt(ethClient, signedApproveTx.Hash())
 		if err != nil {
-			return "", fmt.Errorf("等待Approve确认失败: %v", err)
+			return "", fmt.Errorf("等待Approve确认失败: %v1", err)
 		}
 		log.LogInfo("Approve已确认")
 		// approve后nonce已+1，后续卖出会自动使用新nonce
@@ -245,19 +245,19 @@ func SellTokenViaManager2(target *configentity.MonitorTarget, tokenAddr string, 
 		walletAddress,
 	)
 	if err != nil {
-		return "", fmt.Errorf("Pack sellToken 失败: %v", err)
+		return "", fmt.Errorf("Pack sellToken 失败: %v1", err)
 	}
 
 	// 构建卖出交易
 	nonce, nonceErr := ethClient.PendingNonceAt(context.Background(), walletAddress)
 	if nonceErr != nil {
-		return "", fmt.Errorf("获取 nonce 失败: %v", nonceErr)
+		return "", fmt.Errorf("获取 nonce 失败: %v1", nonceErr)
 	}
 	log.LogInfo("当前钱包 nonce: %d", nonce)
 
 	gasPrice, gasErr := ethClient.SuggestGasPrice(context.Background())
 	if gasErr != nil {
-		log.LogWarn("获取 gasPrice 失败，使用默认1 gwei: %v", gasErr)
+		log.LogWarn("获取 gasPrice 失败，使用默认1 gwei: %v1", gasErr)
 		gasPrice = big.NewInt(1000000000)
 	} else {
 		gasPrice.Mul(gasPrice, big.NewInt(11)).Div(gasPrice, big.NewInt(10)) // +10%
@@ -292,7 +292,7 @@ func SellTokenViaManager2(target *configentity.MonitorTarget, tokenAddr string, 
 			ErrorMsg:  err.Error(),
 			Timestamp: time.Now(),
 		})
-		return "", fmt.Errorf("发送卖出交易失败: %v", err)
+		return "", fmt.Errorf("发送卖出交易失败: %v1", err)
 	}
 
 	txHash := signedTx.Hash().Hex()
@@ -301,7 +301,7 @@ func SellTokenViaManager2(target *configentity.MonitorTarget, tokenAddr string, 
 	// 等待收据 + 更新持仓（减持为0）
 	//receipt, err := waitForReceipt(ethClient, signedTx.Hash())
 	//if err != nil {
-	//	log.LogWarn("收据获取失败，使用估算: %v", err)
+	//	log.LogWarn("收据获取失败，使用估算: %v1", err)
 	//	// 估算更新持仓（卖出全部，持仓清零）
 	//	clearPositionEstimate(tokenAddr, txHash, target) // 你可以自行实现清零逻辑
 	//	return txHash, nil

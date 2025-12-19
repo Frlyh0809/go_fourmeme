@@ -45,12 +45,12 @@ const (
 
 // 方便使用的 Address 变量
 var (
-	DefaultFourmemeManagerAddr = common.HexToAddress(TokenManager2)
-	AddrTokenManagerHelper3    = common.HexToAddress(TokenManagerHelper3)
-	AddrTokenManager1          = common.HexToAddress(TokenManager1)
-	PancakeFactory             = common.HexToAddress(PancakeFactoryAddr)
-	PancakeRouter              = common.HexToAddress(PancakeRouterAddr)
-	WBNB                       = common.HexToAddress(WBNBAddr)
+	AddrTokenManager2       = common.HexToAddress(TokenManager2)
+	AddrTokenManagerHelper3 = common.HexToAddress(TokenManagerHelper3)
+	AddrTokenManager1       = common.HexToAddress(TokenManager1)
+	PancakeFactory          = common.HexToAddress(PancakeFactoryAddr)
+	PancakeRouter           = common.HexToAddress(PancakeRouterAddr)
+	WBNB                    = common.HexToAddress(WBNBAddr)
 
 	HashTransfer                  = common.HexToHash(TopicTransfer)
 	HashOwnershipTransferred      = common.HexToHash(TopicManager2OwnershipTransferred)

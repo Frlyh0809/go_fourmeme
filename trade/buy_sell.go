@@ -1,42 +1,33 @@
-// trade/buy_sell_v1.go
 package trade
 
 import (
-	"fmt"
-	"math/big"
-
+	"go_fourmeme/client" // 只导入必要
 	configentity "go_fourmeme/entity/config"
-	//"go_fourmeme/log"
-	//"go_fourmeme/manager"
 )
 
-// BuyToken 统一买入入口（路由到一级/二级）
-func BuyToken(target *configentity.MonitorTarget, tokenAddr string, marketType string) (string, error) {
-	switch marketType {
-	case "primary":
-		return BuyTokenViaManager(target, tokenAddr)
-	case "secondary":
-		return BuyTokenSecondary(target, tokenAddr)
-	default:
-		return "", fmt.Errorf("未知市场类型: %s", marketType)
+// Buy 入口买入路由
+func Buy(target *configentity.MonitorTarget, tokenAddr string) (string, error) {
+	// 判断一级/二级 (假设基于 client 或 config)
+	if isPrimaryMarket(tokenAddr) { // 你实现这个判断
+		return primaryBuy(target, tokenAddr)
 	}
+	// 二级市场逻辑 (PancakeSwap 等)
+	//return secondaryBuy(target, tokenAddr)
+	return "", nil
 }
 
-// SellToken 统一卖出入口
-func SellToken(tokenAddr string, amount *big.Int, slippage float64, marketType string) (string, error) {
-	switch marketType {
-	case "primary":
-		return SellTokenViaManager(tokenAddr, amount, slippage)
-	case "secondary":
-		return SellTokenSecondary(tokenAddr, amount, slippage)
-	default:
-		return "", fmt.Errorf("未知市场类型: %s", marketType)
+// Sell 入口卖出路由
+func Sell(target *configentity.MonitorTarget, tokenAddr string) (string, error) {
+	if isPrimaryMarket(tokenAddr) {
+		return primarySell(target, tokenAddr)
 	}
+	// 二级市场逻辑
+	//return secondarySell(target, tokenAddr)
+	return "", nil
 }
 
-// GetCurrentTokenPrice 价格查询 (二级市场)
-func GetCurrentTokenPrice(tokenAddr string) (*big.Float, error) {
-	// 调用 secondary.go 中的实现
-	//return getSecondaryPrice(tokenAddr) // 内部路由
-	return nil, nil
+// isPrimaryMarket 判断一级市场 (示例)
+func isPrimaryMarket(tokenAddr string) bool {
+	info := client.GetTokenStatus(tokenAddr)
+	return info.Status == client.StatusTrading // 假设有Type
 }

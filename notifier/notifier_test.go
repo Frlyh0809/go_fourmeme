@@ -25,7 +25,7 @@ func TestNotifier_RealSend_WithConfig(t *testing.T) {
 	// 注意路径：测试文件在 notifier/ 目录，.env 在项目根，所以用 "../.env"
 	err := godotenv.Load("../.env")
 	if err != nil {
-		t.Fatalf("加载 .env 失败: %v\n请确保项目根目录存在 .env 文件", err)
+		t.Fatalf("加载 .env 失败: %v1\n请确保项目根目录存在 .env 文件", err)
 	}
 
 	// 2. 加载推送配置（调用你的 loader）
@@ -40,7 +40,7 @@ func TestNotifier_RealSend_WithConfig(t *testing.T) {
 	// 5. 构造测试消息
 	title := "【Fourmeme 推送集成测试】"
 	message := fmt.Sprintf(
-		"测试成功！\n时间: %s\n配置加载正常\n渠道: Telegram=%v, Email=%v",
+		"测试成功！\n时间: %s\n配置加载正常\n渠道: Telegram=%v1, Email=%v1",
 		time.Now().Format("2006-01-02 15:04:05"),
 		config.NotifierConfig.TelegramEnabled,
 		config.NotifierConfig.EmailEnabled,
@@ -56,7 +56,7 @@ func TestNotifier_RealSend_WithConfig(t *testing.T) {
 	select {
 	case err := <-done:
 		if err != nil {
-			t.Errorf("真实推送失败: %v", err)
+			t.Errorf("真实推送失败: %v1", err)
 		} else {
 			t.Log("真实推送成功！请检查你的 Telegram 和邮箱")
 		}

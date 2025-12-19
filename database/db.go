@@ -26,10 +26,10 @@ func InitDB() {
 	//})
 	DB, err = gorm.Open(mysql.Open(dsn), &gorm.Config{})
 	if err != nil {
-		log.LogFatal("MySQL 连接失败: %v", err)
+		log.LogFatal("MySQL 连接失败: %v1", err)
 	}
 	if err != nil {
-		log.LogFatal("数据库连接失败: %v", err)
+		log.LogFatal("数据库连接失败: %v1", err)
 	}
 
 	// 自动迁移实体表
@@ -39,7 +39,7 @@ func InitDB() {
 	//	&po.TransactionCreate{},
 	//)
 	//if err != nil {
-	//	log.LogFatal("数据库表迁移失败: %v", err)
+	//	log.LogFatal("数据库表迁移失败: %v1", err)
 	//}
 
 	log.LogInfo("数据库初始化成功 (DSN: %s)", dsn)

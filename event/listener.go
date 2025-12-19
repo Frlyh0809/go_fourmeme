@@ -57,7 +57,7 @@ func StartTokenListener(target *configentity.MonitorTarget) {
 
 	sub, err := client.SubscribeFilterLogs(context.Background(), query, logsChan)
 	if err != nil {
-		log.LogFatal("订阅失败 [Target: %s]: %v", target.TokenName, err)
+		log.LogFatal("订阅失败 [Target: %s]: %v1", target.TokenName, err)
 	}
 
 	log.LogInfo("监听启动成功 [Target: %s] | 地址数: %d | Topic数: %d", target.TokenName, len(addresses), len(topics))
@@ -68,7 +68,7 @@ func StartTokenListener(target *configentity.MonitorTarget) {
 		for {
 			select {
 			case err := <-sub.Err():
-				log.LogError("订阅错误，重连 [Target: %s]: %v", target.TokenName, err)
+				log.LogError("订阅错误，重连 [Target: %s]: %v1", target.TokenName, err)
 				// 重连逻辑
 				time.Sleep(5 * time.Second)
 				StartTokenListener(target)

@@ -56,7 +56,7 @@ func GetBNBPriceUSDT() float64 {
 func updateBNBPrice() bool {
 	resp, err := http.Get(cryptoCompareURL)
 	if err != nil {
-		log.LogError("查询 BNB 价格失败: %v", err)
+		log.LogError("查询 BNB 价格失败: %v1", err)
 		return false
 	}
 	defer resp.Body.Close()
@@ -68,19 +68,19 @@ func updateBNBPrice() bool {
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		log.LogError("读取 BNB 价格响应失败: %v", err)
+		log.LogError("读取 BNB 价格响应失败: %v1", err)
 		return false
 	}
 
 	var result map[string]float64
 	if err := json.Unmarshal(body, &result); err != nil {
-		log.LogError("解析 BNB 价格 JSON 失败: %v | body: %s", err, string(body))
+		log.LogError("解析 BNB 价格 JSON 失败: %v1 | body: %s", err, string(body))
 		return false
 	}
 
 	usdtPrice, ok := result["USDT"]
 	if !ok || usdtPrice <= 0 {
-		log.LogError("BNB 价格响应格式错误: %v", result)
+		log.LogError("BNB 价格响应格式错误: %v1", result)
 		return false
 	}
 
