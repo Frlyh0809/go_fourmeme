@@ -12,7 +12,7 @@ var DefaultMonitorTargets = []*config.MonitorTarget{
 	{
 		TokenName:        "FourmemeDefault",
 		TokenAddress:     "", // 动态发现新 token
-		FourmemeManagers: []string{DefaultFourmemeManager, TokenManagerHelper3, TokenManager1},
+		FourmemeManagers: []string{TokenManager2, TokenManagerHelper3, TokenManager1},
 
 		// === 事件 Topic 完全隔离 ===
 		ERC20Topics: []string{
@@ -48,8 +48,8 @@ var DefaultMonitorTargets = []*config.MonitorTarget{
 
 		// 默认交易策略
 		BuyOnLiquidityAdd:       true,
-		BuyAmountBNB:            big.NewFloat(0.01), // 0.1 BNB
-		SlippageTolerance:       0.12,               // 12%
+		BuyAmountBNB:            big.NewFloat(0.001), // 0.1 BNB
+		SlippageTolerance:       0.12,                // 12%
 		TakeProfitMultiple:      4.0,
 		StopLossMultiple:        0.5,
 		TriggerOnSmartWalletBuy: true,

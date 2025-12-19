@@ -38,8 +38,8 @@ func ToWei(amountBNB *big.Float) *big.Int {
 	return amountWei
 }
 
-// getPrivateKey 从 config 加载 ECDSA 私钥
-func getPrivateKey() (*ecdsa.PrivateKey, error) {
+// GetPrivateKey 从 config 加载 ECDSA 私钥
+func GetPrivateKey() (*ecdsa.PrivateKey, error) {
 	pkHex := strings.TrimPrefix(config.BSCChain.PrivateKey, "0x")
 	pkBytes, err := hexutil.Decode("0x" + pkHex)
 	if err != nil {
@@ -48,8 +48,8 @@ func getPrivateKey() (*ecdsa.PrivateKey, error) {
 	return crypto.ToECDSA(pkBytes)
 }
 
-// waitForReceipt 等待交易收据
-func waitForReceipt(client *ethclient.Client, hash common.Hash) (*types.Receipt, error) {
+// WaitForReceipt 等待交易收据
+func WaitForReceipt(client *ethclient.Client, hash common.Hash) (*types.Receipt, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
 	defer cancel()
 	for {
@@ -64,10 +64,10 @@ func waitForReceipt(client *ethclient.Client, hash common.Hash) (*types.Receipt,
 	}
 }
 
-// extractTokenOutFromReceipt 从收据提取实际 token out (Manager → Wallet Transfer)
-func extractTokenOutFromReceipt(receipt *types.Receipt, tokenAddr string) *big.Int {
+// ExtractTokenOutFromReceipt 从收据提取实际 token out (Manager → Wallet Transfer)
+func ExtractTokenOutFromReceipt(receipt *types.Receipt, tokenAddr string) *big.Int {
 	transferTopic := common.HexToHash("0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef")
-	managerAddr := common.HexToAddress(config.DefaultFourmemeManager)
+	managerAddr := common.HexToAddress(config.TokenManager2)
 	walletAddr := common.HexToAddress(config.BSCChain.WalletAddress)
 
 	for _, l := range receipt.Logs {
@@ -82,8 +82,8 @@ func extractTokenOutFromReceipt(receipt *types.Receipt, tokenAddr string) *big.I
 	return nil
 }
 
-// addPositionFromReceipt 添加持仓 (从收据)
-func addPositionFromReceipt(tokenAddr, txHash string, target *configentity.MonitorTarget, tokenOut *big.Int) {
+// AddPositionFromReceipt 添加持仓 (从收据)
+func AddPositionFromReceipt(tokenAddr, txHash string, target *configentity.MonitorTarget, tokenOut *big.Int) {
 	buyBNBFloat := target.BuyAmountBNB
 	buyPriceAvg := new(big.Float).Quo(buyBNBFloat, new(big.Float).SetInt(tokenOut))
 
@@ -101,9 +101,9 @@ func addPositionFromReceipt(tokenAddr, txHash string, target *configentity.Monit
 	manager.AddPosition(pos)
 }
 
-// addPositionFromEstimate 添加持仓 (估算 fallback)
-func addPositionFromEstimate(tokenAddr, txHash string, target *configentity.MonitorTarget, estimatedOut *big.Int) {
-	addPositionFromReceipt(tokenAddr, txHash, target, estimatedOut)
+// AddPositionFromEstimate 添加持仓 (估算 fallback)
+func AddPositionFromEstimate(tokenAddr, txHash string, target *configentity.MonitorTarget, estimatedOut *big.Int) {
+	AddPositionFromReceipt(tokenAddr, txHash, target, estimatedOut)
 }
 
 // calcSlippageMinOut 滑点计算 minOut (使用 Helper3 calcTokenOut 预估)

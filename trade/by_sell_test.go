@@ -7,7 +7,9 @@ import (
 	"go_fourmeme/database"
 	"go_fourmeme/log"
 	"go_fourmeme/manager"
+	"go_fourmeme/trade/primary_market"
 	"go_fourmeme/utils"
+	"math/big"
 	"os"
 	"testing"
 	"time"
@@ -53,7 +55,9 @@ func TestBuyToken(t *testing.T) {
 func TestBuyTokenViaManager(t *testing.T) {
 	before()
 	monitorTargets := config.DefaultMonitorTargets[0]
-	res, err := BuyTokenViaManager(monitorTargets, "0xd22778601da716f3b774a0564e0cae0c3c484444")
+	//res, err := BuyTokenViaManager(monitorTargets, "0xd22778601da716f3b774a0564e0cae0c3c484444")
+	//res, err := BuyTokenViaManager2(monitorTargets, "0xd22778601da716f3b774a0564e0cae0c3c484444")
+	res, err := primary_market.SellTokenViaManager2(monitorTargets, "0xd22778601da716f3b774a0564e0cae0c3c484444", utils.Mul10Pow(big.NewFloat(169023.33839891), big.NewInt(18)))
 
 	log.LogInfo("res:%s err:%v", res, err)
 }

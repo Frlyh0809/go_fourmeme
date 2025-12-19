@@ -61,7 +61,7 @@ func BuyTokenSecondary(target *configentity.MonitorTarget, tokenAddr string) (st
 		Data:     input,
 	})
 
-	privateKey, err := getPrivateKey()
+	privateKey, err := GetPrivateKey()
 	if err != nil {
 		return "", err
 	}
@@ -80,7 +80,7 @@ func BuyTokenSecondary(target *configentity.MonitorTarget, tokenAddr string) (st
 	log.LogInfo("二级买入提交成功 Tx: %s Token: %s Amount: %s BNB", txHash, tokenAddr[:10], target.BuyAmountBNB.Text('f', 6))
 
 	// 添加持仓 (二级无 Manager Transfer，估算 tokenOut)
-	addPositionFromEstimate(tokenAddr, txHash, target, minAmountOut)
+	AddPositionFromEstimate(tokenAddr, txHash, target, minAmountOut)
 
 	return txHash, nil
 }
@@ -133,7 +133,7 @@ func SellTokenSecondary(tokenAddr string, tokenAmount *big.Int, slippage float64
 		Data:     input,
 	})
 
-	privateKey, err := getPrivateKey()
+	privateKey, err := GetPrivateKey()
 	if err != nil {
 		return "", err
 	}
@@ -181,7 +181,7 @@ func approveToken(client *ethclient.Client, tokenAddr string, amount *big.Int) e
 		Data:     input,
 	})
 
-	privateKey, err := getPrivateKey()
+	privateKey, err := GetPrivateKey()
 	if err != nil {
 		return err
 	}

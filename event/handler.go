@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"go_fourmeme/client"
 	"go_fourmeme/database"
+	"go_fourmeme/trade"
 	"math/big"
 	"strconv"
 	"time"
@@ -13,7 +14,6 @@ import (
 	configentity "go_fourmeme/entity/config"
 	"go_fourmeme/entity/po"
 	"go_fourmeme/log"
-	"go_fourmeme/trade"
 	"go_fourmeme/utils"
 
 	"github.com/ethereum/go-ethereum/common"

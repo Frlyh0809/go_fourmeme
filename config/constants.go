@@ -7,9 +7,9 @@ import (
 
 // Fourmeme 核心合约地址 (BSC 主网)
 const (
-	DefaultFourmemeManager = "0x5c952063c7fc8610FFDB798152D69F0B9550762b" // TokenManager2
-	TokenManagerHelper3    = "0xF251F83e40a78868FcfA3FA4599Dad6494E46034"
-	TokenManager1          = "0xEC4549caDcE5DA21Df6E6422d448034B5233bFbC"
+	TokenManager2       = "0x5c952063c7fc8610FFDB798152D69F0B9550762b" // TokenManager2
+	TokenManagerHelper3 = "0xF251F83e40a78868FcfA3FA4599Dad6494E46034"
+	TokenManager1       = "0xEC4549caDcE5DA21Df6E6422d448034B5233bFbC"
 )
 
 // TODO PancakeSwap 一共四个版本 需要去分析 看fourmeme用的哪几套
@@ -45,7 +45,7 @@ const (
 
 // 方便使用的 Address 变量
 var (
-	DefaultFourmemeManagerAddr = common.HexToAddress(DefaultFourmemeManager)
+	DefaultFourmemeManagerAddr = common.HexToAddress(TokenManager2)
 	AddrTokenManagerHelper3    = common.HexToAddress(TokenManagerHelper3)
 	AddrTokenManager1          = common.HexToAddress(TokenManager1)
 	PancakeFactory             = common.HexToAddress(PancakeFactoryAddr)

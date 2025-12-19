@@ -216,7 +216,7 @@ func TestFilterLogs(t *testing.T) {
 	defer cli.Close()
 
 	var addresses []common.Address
-	fourmemeManagers := []string{config.DefaultFourmemeManager, "0x7d6c5429A39B8414609e8D257BEDA23525884444"}
+	fourmemeManagers := []string{config.TokenManager2, "0x7d6c5429A39B8414609e8D257BEDA23525884444"}
 	// Fourmeme Manager 地址
 	for _, mgr := range fourmemeManagers {
 		addresses = append(addresses, common.HexToAddress(mgr))

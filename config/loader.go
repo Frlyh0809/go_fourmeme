@@ -26,6 +26,9 @@ func LoadFromEnvAndFile(configFile string) {
 	if pk := os.Getenv("PRIVATE_KEY"); pk != "" {
 		BSCChain.PrivateKey = pk
 	}
+	if wallet := os.Getenv("WALLET_ADDRESS"); wallet != "" {
+		BSCChain.WalletAddress = wallet
+	}
 	if url := os.Getenv("BSC_WS_URL"); url != "" {
 		BSCChain.WSURL = url
 	}
