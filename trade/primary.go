@@ -1,7 +1,6 @@
 package trade
 
 import (
-	"fmt"
 	"go_fourmeme/client"
 	"go_fourmeme/config"
 	"go_fourmeme/database"
@@ -10,16 +9,19 @@ import (
 	"go_fourmeme/log"
 	"go_fourmeme/manager"
 	"go_fourmeme/trade/internal_market/v2" // 只导入子包执行交易
+	v3 "go_fourmeme/trade/internal_market/v3"
 	"math/big"
 	"time"
 
 	"github.com/ethereum/go-ethereum/common"
 )
 
-// primaryBuy 一级市场买入 (计算参数 + 路由 + 后处理)
-func primaryBuy(target *configentity.MonitorTarget, tokenAddr string) (string, error) {
-	info := client.GetTokenStatus(tokenAddr)
-
+// PrimaryBuy 一级市场买入 (计算参数 + 路由 + 后处理)
+func PrimaryBuy(target *configentity.MonitorTarget, tokenAddr string) (string, error) {
+	info, err := client.GetTokenStatus(tokenAddr)
+	if err != nil {
+		return "", err
+	}
 	// 计算参数
 	amountInWei := ToWei(target.BuyAmountBNB)
 	minAmountOut, err := client.LocalCalcMinAmountOut(info, amountInWei, target.SlippageTolerance)
@@ -36,16 +38,17 @@ func primaryBuy(target *configentity.MonitorTarget, tokenAddr string) (string, e
 	}
 	// 路由到对应版本
 	var txHash string
-	switch info.TokenManager {
-	case config.AddrTokenManager2:
+
+	if info.Quote == config.AddrUSDT || info.Quote == config.AddrUSD1 {
 		txHash, err = v2.BuyTokenViaManagerV2(tokenAddr, amountInWei, minAmountOut, privateKey) // 子包函数
-	case config.AddrTokenManagerHelper3:
-		// 调用helper3子包
-	case config.AddrTokenManager1:
-		// 调用v1子包
-	default:
-		return "", fmt.Errorf("未知Manager类型: %s", info.TokenManager)
+	} else {
+		if info.TokenManager == config.AddrTokenManager1 {
+			//v1.
+		}
+		//v3.
+		txHash, err = v3.BuyTokenViaManagerV3(tokenAddr, amountInWei, minAmountOut, privateKey)
 	}
+
 	if err != nil {
 		log.LogError("一级买入失败: %v1", err)
 		database.SaveTxRecord(&po.TransactionRecord{
@@ -86,8 +89,10 @@ func primaryBuy(target *configentity.MonitorTarget, tokenAddr string) (string, e
 
 // primarySell 一级市场卖出 (计算参数 + 路由 + 后处理)
 func primarySell(target *configentity.MonitorTarget, tokenAddr string) (string, error) {
-	info := client.GetTokenStatus(tokenAddr)
-
+	info, err := client.GetTokenStatus(tokenAddr)
+	if err != nil {
+		return "", err
+	}
 	// 计算参数: 查询余额作为sellAmount
 	//tokenAddress := common.HexToAddress(tokenAddr)
 	//walletAddress := common.HexToAddress(config.BSCChain.WalletAddress)
@@ -107,33 +112,18 @@ func primarySell(target *configentity.MonitorTarget, tokenAddr string) (string, 
 	}
 	// 路由到对应版本
 	var txHash string
-	switch info.TokenManager {
-	case config.AddrTokenManager2:
+	if info.Quote == config.AddrUSDT || info.Quote == config.AddrUSD1 {
 		_, err := client.Approve(tokenAddr, config.TokenManager2, holdTokenAmounts, privateKey)
 		if err != nil {
 			log.LogError("primarySell 授权失败 %v1", err)
 			return "", err
 		}
 		txHash, err = v2.SellTokenViaManagerV2(tokenAddr, holdTokenAmounts, minFunds, privateKey) // 子包函数
-	case config.AddrTokenManagerHelper3:
-
-		// 调用helper3子包
-	case config.AddrTokenManager1:
-		// 调用v1子包
-	default:
-		return "", fmt.Errorf("未知Manager类型: %s", info.TokenManager)
-	}
-	if err != nil {
-		log.LogError("一级卖出失败: %v1", err)
-		//database.SaveTxRecord(&po.TransactionRecord{
-		//	Type:      "sell_primary",
-		//	TokenAddr: tokenAddr,
-		//	AmountOut: holdTokenAmounts,
-		//	Status:    "failed",
-		//	ErrorMsg:  err.Error(),
-		//	Timestamp: time.Now(),
-		//})
-		return "", err
+	} else {
+		if info.TokenManager == config.AddrTokenManager1 {
+			//v1.
+		}
+		//v3.
 	}
 
 	//ethClient := manager.GetEthClient()

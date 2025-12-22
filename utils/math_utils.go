@@ -33,7 +33,7 @@ func Div10Pow(v *big.Int, pow *big.Int) *big.Float {
 	return new(big.Float).Quo(new(big.Float).SetInt(v), new(big.Float).SetInt(divisor))
 }
 
-// Div10Pow 安全地除以 10^pow（v1 != nil 时返回 v1 / 10^pow，否则返回 0）
+// Div10Pow 安全乘以 10^pow（v1 != nil 时返回 v1 / 10^pow，否则返回 0）
 func Mul10Pow(v *big.Float, pow *big.Int) *big.Int {
 	if v == nil {
 		return nil

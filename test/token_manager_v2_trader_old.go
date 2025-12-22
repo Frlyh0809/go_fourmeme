@@ -1,4 +1,4 @@
-package temp
+package test
 
 import (
 	"context"
@@ -23,7 +23,7 @@ import (
 // BuyTokenViaManager2 一级市场买入 (纯 TokenManager2 V2 版本, BNB quote盘子)
 func BuyTokenViaManager2(target *configentity.MonitorTarget, tokenAddr string) (string, error) {
 	ethClient := manager.GetEthClient()
-	info := client.GetTokenStatus(tokenAddr)
+	info, err := client.GetTokenStatus(tokenAddr)
 	if info.Status != client.StatusTrading {
 		log.LogWarn("Token 状态非 TRADING (%s)，跳过买入: %s", info.Status, tokenAddr[:10])
 		return "", nil
@@ -137,7 +137,7 @@ func BuyTokenViaManager2(target *configentity.MonitorTarget, tokenAddr string) (
 // SellTokenViaManager2 一级市场卖出全部持仓 (纯 TokenManager2 V2 版本, BNB quote盘子)
 func SellTokenViaManager2(target *configentity.MonitorTarget, tokenAddr string, balance *big.Int) (string, error) {
 	ethClient := manager.GetEthClient()
-	info := client.GetTokenStatus(tokenAddr)
+	info, _ := client.GetTokenStatus(tokenAddr)
 	if info.Status != client.StatusTrading {
 		log.LogWarn("Token 状态非 TRADING (%s)，跳过卖出: %s", info.Status, tokenAddr[:10])
 		return "", nil

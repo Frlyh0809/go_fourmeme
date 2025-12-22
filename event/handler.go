@@ -104,13 +104,14 @@ func HandleEventV2(allLogs []types.Log, receipt *types.Receipt, target *configen
 
 	// 2. 买卖识别：匹配自定义事件
 	var tradeInfo struct {
-		TokenAddr    common.Address
-		Buyer        common.Address
-		TokenAmount  *big.Int
-		BNBAmount    *big.Int
-		BNBFeeAmount *big.Int
-		IsUSD1       bool
-		TxHash       common.Hash
+		TokenAddr          common.Address
+		Buyer              common.Address
+		TokenAmount        *big.Int
+		BNBAmount          *big.Int
+		BNBFeeAmount       *big.Int
+		paymentToken       common.Address
+		paymentTokenSymbol string
+		TxHash             common.Hash
 	}
 
 	foundCustom := false
@@ -150,18 +151,23 @@ func HandleEventV2(allLogs []types.Log, receipt *types.Receipt, target *configen
 
 			tradeInfo.TxHash = logData.TxHash
 
-			// 检测 USD1 支付
-			for _, l := range allLogs {
-				if l.Address == config.AddrUSD1 && l.Topics[0] == config.HashTransfer {
-					if len(l.Topics) == 3 {
-						if common.BytesToAddress(words[1].Bytes()) == config.AddrTokenManagerHelper3 || common.BytesToAddress(words[2].Bytes()) == config.AddrTokenManagerHelper3 {
-							tradeInfo.IsUSD1 = true
-							protocol = "managerV3"
-							protocolAddress = config.AddrTokenManagerHelper3
-							break
-						}
-					}
+			// TODO 检测 USD1 支付
+			tokenStatus, err := client.GetTokenStatus(tradeInfo.TokenAddr.Hex())
+			if err == nil {
+			}
+			if tokenStatus.Quote != config.AddrZero {
+				tradeInfo.paymentToken = tokenStatus.Quote
+				if tokenStatus.Quote == config.AddrUSDT {
+					tradeInfo.paymentTokenSymbol = "BUSDT"
+				} else if tokenStatus.Quote == config.AddrUSD1 {
+					tradeInfo.paymentTokenSymbol = "USD1"
+				} else if tokenStatus.Quote == config.WBNB {
+					tradeInfo.paymentTokenSymbol = "WBNB"
 				}
+			} else {
+				tradeInfo.paymentToken = config.AddrZero
+				tradeInfo.paymentTokenSymbol = "BNB"
+
 			}
 
 			foundCustom = true
@@ -187,13 +193,6 @@ func HandleEventV2(allLogs []types.Log, receipt *types.Receipt, target *configen
 				continue
 			}
 
-			payment := "BNB"
-			paymentToken := config.ZeroAddress
-			if tradeInfo.IsUSD1 {
-				payment = "USD1"
-				paymentToken = config.USD1Address
-			}
-
 			var recordType int
 			var send, receive string
 
@@ -204,7 +203,7 @@ func HandleEventV2(allLogs []types.Log, receipt *types.Receipt, target *configen
 				receive = to.Hex()
 				log.LogInfo("【卖出】Token: %s | Seller: %s | Token: %s | Pay: %s %s | Tx: %s",
 					tradeInfo.TokenAddr.Hex(), tradeInfo.Buyer.Hex(), tradeInfo.TokenAmount.String(),
-					payment, tradeInfo.BNBAmount.String(), tradeInfo.TxHash.Hex())
+					tradeInfo.paymentTokenSymbol, tradeInfo.BNBAmount.String(), tradeInfo.TxHash.Hex())
 
 			} else if isFourmemeManager(from) {
 				// 买入
@@ -213,7 +212,7 @@ func HandleEventV2(allLogs []types.Log, receipt *types.Receipt, target *configen
 				receive = to.Hex()
 				log.LogInfo("【买入】Token: %s | Buyer: %s | Token: %s | Pay: %s %s | Tx: %s",
 					tradeInfo.TokenAddr.Hex(), tradeInfo.Buyer.Hex(), tradeInfo.TokenAmount.String(),
-					payment, tradeInfo.BNBAmount.String(), tradeInfo.TxHash.Hex())
+					tradeInfo.paymentTokenSymbol, tradeInfo.BNBAmount.String(), tradeInfo.TxHash.Hex())
 
 				if target != nil {
 					//TODO 交易
@@ -233,7 +232,7 @@ func HandleEventV2(allLogs []types.Log, receipt *types.Receipt, target *configen
 			bnbAmountDis := utils.Div10Pow(tradeInfo.BNBAmount, big.NewInt(18))
 			price := utils.DivFloat(bnbAmountDis, tokenAmountDis)
 			volume := bnbAmountDis
-			if payment == "USD1" {
+			if tradeInfo.paymentTokenSymbol == "USD1" || tradeInfo.paymentTokenSymbol == "BUSDT" {
 				//单位使用bnb
 				price = new(big.Float).Mul(price, big.NewFloat(bnbPrice))
 				volume = new(big.Float).Mul(volume, big.NewFloat(bnbPrice))
@@ -251,7 +250,7 @@ func HandleEventV2(allLogs []types.Log, receipt *types.Receipt, target *configen
 				Protocol:        protocol, // 根据实际判断
 				ProtocolAddress: protocolAddress.Hex(),
 				TokenAddress:    tradeInfo.TokenAddr.Hex(),
-				PaymentToken:    paymentToken,
+				PaymentToken:    tradeInfo.paymentToken.Hex(),
 				TokenAmount:     utils.BigFloatToString(tokenAmountDis), // string
 				PaymentAmount:   utils.BigFloatToString(bnbAmountDis),   // string
 				Price:           utils.BigFloatToString(price),

@@ -1,5 +1,5 @@
 // client/ethclient_test.go
-package temp_test
+package test_test
 
 import (
 	"context"

@@ -1,4 +1,4 @@
-package temp
+package test
 
 import (
 	"fmt"
@@ -14,7 +14,7 @@ import (
 	"time"
 )
 
-func before() {
+func Before() {
 	if err := os.Chdir(".."); err != nil { // 根据测试文件深度调整
 		fmt.Printf("改变工作目录失败: %v1\n", err)
 		os.Exit(1)
@@ -52,7 +52,7 @@ func TestBuyToken(t *testing.T) {
 }
 
 func TestBuyTokenViaManager(t *testing.T) {
-	before()
+	Before()
 	monitorTargets := config.DefaultMonitorTargets[0]
 	//res, err := BuyTokenViaManager(monitorTargets, "0xd22778601da716f3b774a0564e0cae0c3c484444")
 	res1, err1 := BuyTokenViaManager2(monitorTargets, "0xd22778601da716f3b774a0564e0cae0c3c484444")

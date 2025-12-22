@@ -45,17 +45,17 @@ type TokenInfo struct {
 }
 
 // GetTokenStatus 查询 token 状态（使用 getTokenInfo）
-func GetTokenStatus(tokenAddr string) TokenInfo {
+func GetTokenStatus(tokenAddr string) (TokenInfo, error) {
 	ethClient := manager.GetEthClient()
 	if ethClient == nil {
 		log.LogError("ethclient 未初始化")
-		return TokenInfo{Status: StatusUnknown}
+		return TokenInfo{Status: StatusUnknown}, fmt.Errorf("ethclient 未初始化")
 	}
 
 	helperABI := utils.GetABI("TokenManagerHelper")
 	if helperABI == nil {
 		log.LogError("TokenManagerHelper ABI 未加载")
-		return TokenInfo{Status: StatusUnknown}
+		return TokenInfo{Status: StatusUnknown}, fmt.Errorf("ethclient 未初始化")
 	}
 
 	helperAddr := common.HexToAddress(config.TokenManagerHelper3)
@@ -64,7 +64,7 @@ func GetTokenStatus(tokenAddr string) TokenInfo {
 	input, err := helperABI.Pack("getTokenInfo", common.HexToAddress(tokenAddr))
 	if err != nil {
 		log.LogError("Pack getTokenInfo 失败: %v1", err)
-		return TokenInfo{Status: StatusUnknown}
+		return TokenInfo{Status: StatusUnknown}, fmt.Errorf("pack getTokenInfo 失败: %v", err)
 	}
 
 	// Call
@@ -74,7 +74,7 @@ func GetTokenStatus(tokenAddr string) TokenInfo {
 	}, nil)
 	if err != nil {
 		log.LogWarn("调用 getTokenInfo 失败 (Token: %s): %v1", tokenAddr[:10], err)
-		return TokenInfo{Status: StatusUnknown}
+		return TokenInfo{Status: StatusUnknown}, fmt.Errorf("调用 getTokenInfo 失败 (Token: %s): %v", tokenAddr[:10], err)
 	}
 
 	// 定义结构体匹配 ABI 输出顺序
@@ -96,7 +96,7 @@ func GetTokenStatus(tokenAddr string) TokenInfo {
 	err = helperABI.UnpackIntoInterface(&info, "getTokenInfo", output)
 	if err != nil {
 		log.LogError("解包 getTokenInfo 失败: %v1", err)
-		return TokenInfo{Status: StatusUnknown}
+		return TokenInfo{Status: StatusUnknown}, fmt.Errorf("解包 getTokenInfo 失败 : %w", err)
 	}
 
 	// 推导状态（Fourmeme 逻辑：LiquidityAdded == true 表示已毕业）
@@ -153,7 +153,7 @@ func GetTokenStatus(tokenAddr string) TokenInfo {
 		MaxFunds:       info.MaxFunds,
 		LiquidityAdded: info.LiquidityAdded,
 		Status:         status,
-	}
+	}, nil
 }
 
 // LocalCalcMinAmountOut 本地计算 minAmountOut（绕过 calcTokenOut）
