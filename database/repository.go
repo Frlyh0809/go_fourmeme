@@ -19,11 +19,11 @@ func SaveTxRecord(record *po.TransactionRecord) error {
 	record.Timestamp = time.Now()
 
 	if err := DB.Create(record).Error; err != nil {
-		log.LogError("保存交易记录失败 (Tx: %s): %v1", record.TxHash[:10], err)
+		log.LogError("保存交易记录失败 (Tx: %s): %v1", record.TxHash, err)
 		return err
 	}
 
-	log.LogInfo("交易记录保存成功 [ID: %d | Tx: %s | Type: %s]", record.ID, record.TxHash[:10], record.Type)
+	log.LogInfo("交易记录保存成功 [ID: %d | Tx: %s | Type: %s]", record.ID, record.TxHash, record.Type)
 	return nil
 }
 

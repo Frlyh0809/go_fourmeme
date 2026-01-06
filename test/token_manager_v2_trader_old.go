@@ -106,7 +106,7 @@ func BuyTokenViaManager2(target *configentity.MonitorTarget, tokenAddr string) (
 		database.SaveTxRecord(&po.TransactionRecord{
 			Type:      "buy_primary_v2",
 			TokenAddr: tokenAddr,
-			AmountIn:  amountInWei,
+			AmountIn:  amountInWei.String(),
 			Status:    "failed",
 			ErrorMsg:  err.Error(),
 			Timestamp: time.Now(),
@@ -287,7 +287,7 @@ func SellTokenViaManager2(target *configentity.MonitorTarget, tokenAddr string, 
 		database.SaveTxRecord(&po.TransactionRecord{
 			Type:      "sell_primary_v2",
 			TokenAddr: tokenAddr,
-			AmountOut: balance,
+			AmountOut: balance.String(),
 			Status:    "failed",
 			ErrorMsg:  err.Error(),
 			Timestamp: time.Now(),

@@ -26,11 +26,11 @@ var DefaultMonitorTargets = []*config.MonitorTarget{
 		//	"0xd78ad95fa46c994b6551d0da85fc275fe613ce37657fb8d5e3d130840159d822", // Swap
 		//},
 		FourmemeTopics: []string{
-			TopicManager1Event1, // TokenManager1
-			TopicManager1Event2, // TokenManager1
+			TopicManager1EventSell, // TokenManager1
+			TopicManager1EventBuy,  // TokenManager1
 
-			TopicManager2Event1, // TokenManager2 Deposit/Confirm (常见)
-			TopicManager2Event2, // TokenManager2 Deposit/Confirm (常见)
+			TopicManager2EventBuy,  // TokenManager2 Deposit/Confirm (常见)
+			TopicManager2EventSell, // TokenManager2 Deposit/Confirm (常见)
 
 			TopicManager2CreateEvent1,         //TokenManager2 createToken
 			TopicManager2OwnershipTransferred, //TokenManager2 OwnershipTransferred [previousOwner=零地址：createToken]
@@ -72,3 +72,5 @@ var BSCChain = &config.ChainConfig{
 	WalletAddress:      "",
 	DBDSN:              "",
 }
+
+var BscScanAPIKey = "RJ9S6Q6JKJKJC5JEXCHTE1ICYPRK54R5WF"

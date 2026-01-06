@@ -1,4 +1,4 @@
-// utils/seq.go 或直接放在 event 或 repository 包中
+// utils/seq.go 或直接放在 parser 或 repository 包中
 package utils // 根据需要调整包名
 
 import "fmt"

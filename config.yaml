@@ -3,7 +3,7 @@ monitor_targets:
     fourmeme_managers:
       - "0x5c952063c7fc8610FFDB798152D69F0B9550762b"
       - "0xF251F83e40a78868FcfA3FA4599Dad6494E46034"
-    buy_amount_bnb: 0.1
+    buy_amount_bnb: 0.001
     slippage_tolerance: 0.12
     take_profit_multiple: 4.0
     stop_loss_multiple: 0.5

@@ -4,13 +4,11 @@ package client
 import (
 	"context"
 	"fmt"
-	"math/big"
-	"time"
-
 	"go_fourmeme/config"
 	"go_fourmeme/log"
 	"go_fourmeme/manager"
 	"go_fourmeme/utils"
+	"math/big"
 
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/common"
@@ -108,36 +106,36 @@ func GetTokenStatus(tokenAddr string) (TokenInfo, error) {
 
 	//log.LogInfo("Token %s 状态查询成功: LiquidityAdded=%v1 | Offers=%s | Funds=%s",
 	//	tokenAddr[:10], info.LiquidityAdded, info.Offers.String(), info.Funds.String())
-	log.LogInfo(`Token %s 状态详情:
-    Version:        %s
-    TokenManager:   %s
-    Quote:          %s
-    LastPrice:      %s
-    TradingFeeRate: %s
-    MinTradingFee:  %s
-    LaunchTime:     %s (%s)
-    Offers:         %s
-    MaxOffers:      %s
-    Funds:          %s
-    MaxFunds:       %s
-    LiquidityAdded: %v1
-    Status:         %s`,
-		tokenAddr[:10],
-		info.Version.String(),
-		info.TokenManager.Hex(),
-		info.Quote.Hex(),
-		info.LastPrice.String(),
-		info.TradingFeeRate.String(),
-		info.MinTradingFee.String(),
-		info.LaunchTime.String(),
-		time.Unix(info.LaunchTime.Int64(), 0).Format("2006-01-02 15:04:05"),
-		info.Offers.String(),
-		info.MaxOffers.String(),
-		info.Funds.String(),
-		info.MaxFunds.String(),
-		info.LiquidityAdded,
-		status,
-	)
+	//log.LogInfo(`Token %s 状态详情:
+	//Version:        %s
+	//TokenManager:   %s
+	//Quote:          %s
+	//LastPrice:      %s
+	//TradingFeeRate: %s
+	//MinTradingFee:  %s
+	//LaunchTime:     %s (%s)
+	//Offers:         %s
+	//MaxOffers:      %s
+	//Funds:          %s
+	//MaxFunds:       %s
+	//LiquidityAdded: %v1
+	//Status:         %s`,
+	//	tokenAddr[:10],
+	//	info.Version.String(),
+	//	info.TokenManager.Hex(),
+	//	info.Quote.Hex(),
+	//	info.LastPrice.String(),
+	//	info.TradingFeeRate.String(),
+	//	info.MinTradingFee.String(),
+	//	info.LaunchTime.String(),
+	//	time.Unix(info.LaunchTime.Int64(), 0).Format("2006-01-02 15:04:05"),
+	//	info.Offers.String(),
+	//	info.MaxOffers.String(),
+	//	info.Funds.String(),
+	//	info.MaxFunds.String(),
+	//	info.LiquidityAdded,
+	//	status,
+	//)
 
 	return TokenInfo{
 		Version:        info.Version,

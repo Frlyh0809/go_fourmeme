@@ -72,7 +72,10 @@ func BuyTokenViaManagerV2(
 		return "", err
 	}
 
-	return signedTx.Hash().Hex(), nil
+	txHash := signedTx.Hash().Hex()
+	log.LogInfo("V2 一级买入提交成功 Tx: %s Token: %s", txHash, tokenAddr[:10])
+
+	return txHash, nil
 }
 
 // SellTokenViaManagerV2 只发起V2卖出交易 (无计算/后处理)
@@ -134,5 +137,8 @@ func SellTokenViaManagerV2(
 		return "", err
 	}
 
-	return signedTx.Hash().Hex(), nil
+	txHash := signedTx.Hash().Hex()
+	log.LogInfo("V2 一级卖出提交成功 Tx: %s Token: %s", txHash, tokenAddr[:10])
+
+	return txHash, nil
 }

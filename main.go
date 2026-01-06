@@ -13,9 +13,9 @@ import (
 
 	"go_fourmeme/config"
 	"go_fourmeme/database"
-	"go_fourmeme/event"
 	"go_fourmeme/log"
 	"go_fourmeme/manager"
+	"go_fourmeme/parser"
 	"go_fourmeme/utils"
 )
 
@@ -47,14 +47,14 @@ func main() {
 	defer ethClient.Close()
 
 	// 6. 启动所有监听
-	//event.StartAllListeners()
+	//parser.StartAllListeners()
 	// 启动主流程：区块轮询监听
 	manager.WG.Add(1)
-	go event.StartBlockPolling(3 * time.Second) // 每 3 秒轮询一次
+	go parser.StartBlockPolling(3 * time.Second) // 每 3 秒轮询一次
 
 	// 7. 启动盈亏监控
 	manager.WG.Add(1)
-	go monitorProfitAndLoss()
+	//go monitorProfitAndLoss()
 
 	log.LogInfo("Fourmeme 自动交易机器人已启动！监控中...")
 

@@ -30,12 +30,12 @@ const (
 	TopicManager2CreateEvent1         = "0x396d5e902b675b032348d3d2e9517ee8f0c4a926603fbc075d3d282ff00cad20"
 
 	// Manager1 旧事件 (很少用，但兼容)
-	TopicManager1Event1 = "0x80d4e495cda89b31af98c8e977ff11f417bafcee26902a17a15be51830c47533"
-	TopicManager1Event2 = "0x00fe0e12b43090c1fc19a34aefa5cc138a4eeafc60ab800f855c730b3fb9480e"
+	TopicManager1EventSell = "0x80d4e495cda89b31af98c8e977ff11f417bafcee26902a17a15be51830c47533" //sell
+	TopicManager1EventBuy  = "0x00fe0e12b43090c1fc19a34aefa5cc138a4eeafc60ab800f855c730b3fb9480e" //buy
 
 	// Manager2 / Helper3 新事件
-	TopicManager2Event1 = "0x7db52723a3b2cdd6164364b3b766e65e540d7be48ffa89582956d8eaebe62942"
-	TopicManager2Event2 = "0x0a5575b3648bae2210cee56bf33254cc1ddfbc7bf637c0af2ac18b14fb1bae19"
+	TopicManager2EventSell = "0x0a5575b3648bae2210cee56bf33254cc1ddfbc7bf637c0af2ac18b14fb1bae19" //sell
+	TopicManager2EventBuy  = "0x7db52723a3b2cdd6164364b3b766e65e540d7be48ffa89582956d8eaebe62942" //buy
 
 	//PancakeSwap
 	PairCreatedTopic    = "0xe1fffcc4923d04b559f4d29a8bfc6cda04eb5b0d3c460751c2402c5c5cc9109c"
@@ -55,10 +55,10 @@ var (
 	HashTransfer                  = common.HexToHash(TopicTransfer)
 	HashOwnershipTransferred      = common.HexToHash(TopicManager2OwnershipTransferred)
 	HashTopicManager2CreateEvent1 = common.HexToHash(TopicManager2CreateEvent1)
-	HashManager1Event1            = common.HexToHash(TopicManager1Event1)
-	HashManager1Event2            = common.HexToHash(TopicManager1Event2)
-	HashManager2Event1            = common.HexToHash(TopicManager2Event1)
-	HashManager2Event2            = common.HexToHash(TopicManager2Event2)
+	HashManager1EventSell         = common.HexToHash(TopicManager1EventSell)
+	HashManager1EventBuy          = common.HexToHash(TopicManager1EventBuy)
+	HashManager2EventBuy          = common.HexToHash(TopicManager2EventBuy)
+	HashManager2EventSell         = common.HexToHash(TopicManager2EventSell)
 
 	AddrUSDT = common.HexToAddress(USDTAddress)
 	AddrUSD1 = common.HexToAddress(USD1Address)

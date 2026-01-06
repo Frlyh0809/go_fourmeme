@@ -7,9 +7,14 @@ import (
 
 // Buy 入口买入路由
 func Buy(target *configentity.MonitorTarget, tokenAddr string) (string, error) {
+	isPrimary, tokenInfo := isPrimaryMarket(tokenAddr)
+
 	// 判断一级/二级 (假设基于 client 或 config)
-	if isPrimaryMarket(tokenAddr) { // 你实现这个判断
-		return PrimaryBuy(target, tokenAddr)
+	if isPrimary { // 你实现这个判断
+		PrimaryBuy(target, tokenAddr, tokenInfo)
+		primarySell(target, tokenAddr, tokenInfo)
+		return "", nil
+		//return PrimaryBuy(target, tokenAddr, tokenInfo)
 	}
 	// 二级市场逻辑 (PancakeSwap 等)
 	//return secondaryBuy(target, tokenAddr)
@@ -18,8 +23,9 @@ func Buy(target *configentity.MonitorTarget, tokenAddr string) (string, error) {
 
 // Sell 入口卖出路由
 func Sell(target *configentity.MonitorTarget, tokenAddr string) (string, error) {
-	if isPrimaryMarket(tokenAddr) {
-		return primarySell(target, tokenAddr)
+	isPrimary, tokenInfo := isPrimaryMarket(tokenAddr)
+	if isPrimary {
+		return primarySell(target, tokenAddr, tokenInfo)
 	}
 	// 二级市场逻辑
 	//return secondarySell(target, tokenAddr)
@@ -27,10 +33,10 @@ func Sell(target *configentity.MonitorTarget, tokenAddr string) (string, error) 
 }
 
 // isPrimaryMarket 判断一级市场 (示例)
-func isPrimaryMarket(tokenAddr string) bool {
+func isPrimaryMarket(tokenAddr string) (bool, client.TokenInfo) {
 	info, err := client.GetTokenStatus(tokenAddr)
 	if err != nil {
-		return false
+		return false, client.TokenInfo{}
 	}
-	return info.Status == client.StatusTrading // 假设有Type
+	return info.Status == client.StatusTrading, info // 假设有Type
 }

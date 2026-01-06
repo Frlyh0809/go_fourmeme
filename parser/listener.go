@@ -1,5 +1,5 @@
-// event/listener.go
-package event
+// parser/listener.go
+package parser
 
 import (
 	"context"

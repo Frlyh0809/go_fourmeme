@@ -11,7 +11,8 @@ import (
 func TestPrimaryBuy(t *testing.T) {
 	target := config.DefaultMonitorTargets[0]
 	tokenAddr := ""
-	trade.PrimaryBuy(target, tokenAddr)
+	tokenInfo, _ := client.GetTokenStatus(tokenAddr)
+	trade.PrimaryBuy(target, tokenAddr, tokenInfo)
 }
 
 func TestInfo(t *testing.T) {

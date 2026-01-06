@@ -1,5 +1,5 @@
-// event/listener.go
-package event
+// parser/listener.go
+package parser
 
 import (
 	"context"
@@ -29,8 +29,8 @@ func StartBlockPolling(interval time.Duration) {
 	ticker := time.NewTicker(interval)
 	defer ticker.Stop()
 
+	//lastProcessedBlock = 74256449
 	log.LogInfo("区块轮询启动 (间隔: %v1)", interval)
-
 	for {
 		select {
 		case <-ticker.C:
@@ -43,18 +43,19 @@ func StartBlockPolling(interval time.Duration) {
 
 // pollNewBlocks 轮询新区块，并发处理
 func pollNewBlocks() {
-	client := manager.GetEthClient()
+	ethClient := manager.GetEthClient()
 
-	header, err := client.HeaderByNumber(context.Background(), nil)
+	header, err := ethClient.HeaderByNumber(context.Background(), nil)
 	if err != nil {
 		log.LogError("获取最新区块失败: %v1", err)
 		return
 	}
 
 	latestBlock := header.Number.Uint64()
+	//latestBlock := uint64(74256450)
 
 	if lastProcessedBlock == 0 {
-		lastProcessedBlock = latestBlock - 10
+		lastProcessedBlock = latestBlock - 1
 	}
 
 	if latestBlock <= lastProcessedBlock {
@@ -96,19 +97,21 @@ func processBlockReceipts(blockNum *big.Int) {
 	}
 	log.LogInfo("区块 %d | hash size: %d ", blockNum, len(receipts))
 	// 收集所有日志
+	target := config.DefaultMonitorTargets[0]
+
 	for _, receipt := range receipts {
 		if receipt != nil {
-			target := config.DefaultMonitorTargets[0]
 			var hashLogs []types.Log
 			for _, logPtr := range receipt.Logs {
 				if logPtr != nil {
 					hashLogs = append(hashLogs, *logPtr) // 解引用指针
 				}
 			}
-			if len(hashLogs) > 0 {
-				//log.LogInfo("区块 %d | hash: %s | logs size: %v1", blockNum, receipt.TxHash.Hex(), len(hashLogs))
-				HandleEventV2(hashLogs, receipt, target)
-			}
+			//if len(hashLogs) > 0 {
+			//log.LogInfo("区块 %d | hash: %s | logs size: %v1", blockNum, receipt.TxHash.Hex(), len(hashLogs))
+			//HandleEventV2(hashLogs, receipt, target)
+			HandleEventV3(hashLogs, receipt, target)
+			//}
 		}
 	}
 
